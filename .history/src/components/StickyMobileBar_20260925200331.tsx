@@ -30,7 +30,7 @@ export const StickyMobileBar: React.FC<Props> = ({ lang, onOpenBooking }) => {
 
       {/* Кнопка быстрого WhatsApp */}
       <a
-        href={`https://wa.me/34614678720?text=${waMessage}`}
+        href={`https://wa.me/34600000000?text=${waMessage}`}
         target="_blank"
         rel="noopener noreferrer"
         className="w-12 h-12 flex items-center justify-center bg-emerald-600 active:bg-emerald-500 text-white rounded-full shadow-lg active:scale-95 transition shrink-0"
