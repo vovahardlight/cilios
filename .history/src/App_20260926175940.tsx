@@ -13,7 +13,6 @@ import { GsapMagnetic } from './components/GsapMagnetic';
 import { GsapSmoothScroll } from './components/GsapSmoothScroll';
 
 // КОМПОНЕНТЫ
-import { ScrollToTop } from './components/ScrollToTop';
 import { ScrollProgress } from './components/ScrollProgress';
 import { CurvedMarquee } from './components/CurvedMarquee';
 import { FilmGrain } from './components/FilmGrain';
@@ -37,7 +36,6 @@ export function App() {
   const t = content[lang];
   const mainRef = useRef<HTMLDivElement>(null);
 
-  // СБОРКА ВСЕХ СЦЕН GSAP
   useEffect(() => {
     if (isLoading) return;
 
@@ -81,7 +79,7 @@ export function App() {
           '-=0.7'
         );
 
-      // 2. МЯГКИЙ ПАРАЛЛАКС HERO С ГЛУБОКОЙ ИНЕРЦИЕЙ (scrub: 1.8)
+      // 2. ПАРАЛЛАКС HERO
       gsap.to('.gsap-hero-title', {
         y: -60,
         opacity: 0.25,
@@ -93,7 +91,29 @@ export function App() {
         },
       });
 
-      // 3. ЦИФРЫ ДОВЕРИЯ (ПО ОЧЕРЕДИ НА СЕРЕДИНЕ ЭКРАНА: TOP 65%)
+      // 3. ЗАГОЛОВКИ ВСЕХ ОСТАЛЬНЫХ СЕКЦИЙ (СРАБАТЫВАЮТ НА СЕРЕДИНЕ ЭКРАНА: TOP 65%)
+      gsap.utils
+        .toArray<HTMLElement>('section:not(.gsap-hero) .gsap-reveal-text')
+        .forEach((text) => {
+          gsap.fromTo(
+            text,
+            { yPercent: 120, y: 0, opacity: 0 },
+            {
+              yPercent: 0,
+              y: 0,
+              opacity: 1,
+              duration: 1,
+              ease: 'power4.out',
+              scrollTrigger: {
+                trigger: text,
+                start: 'top 65%',
+                once: true,
+              },
+            }
+          );
+        });
+
+      // 4. СТАГГЕР БЛОКА ЦИФР (ПО ОЧЕРЕДИ: TOP 65%)
       gsap.fromTo(
         '.gsap-stat-item',
         { y: 40, opacity: 0 },
@@ -111,7 +131,7 @@ export function App() {
         }
       );
 
-      // 4. СЛАЙДЕР «ДО/ПОСЛЕ» (ПОЯВЛЕНИЕ НА СЕРЕДИНЕ ЭКРАНА: TOP 60%)
+      // 5. ВХОД СЛАЙДЕРА ДО/ПОСЛЕ (TOP 60%)
       gsap.fromTo(
         '#results',
         { opacity: 0, y: 40 },
@@ -128,208 +148,92 @@ export function App() {
         }
       );
 
-      // 5. СЕКЦИЯ ЦЕН: ПЕРСОНАЛЬНОЕ ПОЯВЛЕНИЕ ЗАГОЛОВКА (TOP 65%)
+      // 6. КАСКАД КАРТОЧЕК ПРАЙСА (СТРОГО ПО ОЧЕРЕДИ: TOP 60%)
       gsap.fromTo(
-        '.gsap-pricing-title',
-        { yPercent: 120, y: 0, opacity: 0 },
+        '.gsap-service-card',
+        { y: 45, opacity: 0 },
         {
-          yPercent: 0,
           y: 0,
           opacity: 1,
-          duration: 1,
-          ease: 'power4.out',
+          stagger: 0.13,
+          duration: 0.85,
+          ease: 'power3.out',
           scrollTrigger: {
-            trigger: '#services .text-center',
-            start: 'top 65%',
+            trigger: '.gsap-services-list',
+            start: 'top 60%',
             once: true,
           },
         }
       );
 
-     // 6. ПЕРСОНАЛЬНЫЙ СКРОЛЛ-ТРИГГЕР ДЛЯ КАЖДОЙ УСЛУГИ (КАЖДАЯ ПОЯВЛЯЕТСЯ САМА ПО СЕБЕ)
-     const serviceCards = gsap.utils.toArray<HTMLElement>('.gsap-service-card');
-      
-     serviceCards.forEach((card) => {
-       gsap.fromTo(
-         card,
-         { 
-           y: 40, 
-           opacity: 0 
-         },
-         {
-           y: 0,
-           opacity: 1,
-           duration: 0.75,
-           ease: 'power3.out',
-           scrollTrigger: {
-             trigger: card,         // Триггер — сама карточка
-             start: 'top 70%',      // Появляется, когда верхушка карточки входит в нижнюю треть экрана
-             once: true,            // Срабатывает один раз и остаётся на месте
-           },
-         }
-       );
-     });
-
-// 7. КАСКАД ТЕКСТА И КАРТОЧЕК В БЛОКЕ ОТЗЫВОВ (LA EXPERIENCIA EN PRIMERA PERSONA)
-const reviewsTl = gsap.timeline({
-  scrollTrigger: {
-    trigger: '#reviews',
-    start: 'top 65%', // Срабатывает, когда секция появляется на 65% высоты экрана
-    once: true,
-  },
-});
-
-reviewsTl
-  // 1. Сначала каскадом всплывает текст шапки (заголовок, бейдж, описание)
-  .fromTo(
-    '#reviews .text-center > *, #reviews h2',
-    { 
-      y: 35, 
-      opacity: 0 
-    },
-    {
-      y: 0,
-      opacity: 1,
-      stagger: 0.3,
-      duration: 0.8,
-      ease: 'power3.out',
-    }
-  )
-  // 2. С небольшим нахлестом (-=0.4с) следом каскадом выкатываются карточки отзывов
-  .fromTo(
-    '#reviews .rounded-3xl',
-    { 
-      y: 50, 
-      opacity: 0 
-    },
-    {
-      y: 0,
-      opacity: 1,
-      stagger: 0.3, // Задержка между появлением каждой карточки
-      duration: 0.85,
-      ease: 'power3.out',
-    },
-    '-=0.4'
-  );
-
-      // 8. КАСКАД FAQ АККОРДЕОНА (TOP 60%)
-   const faqItems = gsap.utils.toArray<HTMLElement>('#faq .rounded-2xl');
-
-   faqItems.forEach((item) => {
-     gsap.fromTo(
-       item,
-       { 
-         y: 35, 
-         opacity: 0 
-       },
-       {
-         y: 0,
-         opacity: 1,
-         duration: 0.75,
-         ease: 'power3.out',
-         scrollTrigger: {
-           trigger: item,         // Триггер — сам вопрос
-           start: 'top 70%',      // Появляется, когда вопрос входит в нижнюю область экрана
-           once: true,
-         },
-       }
-     );
-   });
-
-     // 9. СТУДИЯ: МЕДЛЕННОЕ БЛАГОРОДНОЕ ПОЯВЛЕНИЕ (SLOW LUXURY TIMELINE)
-     const studioTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: '.gsap-studio',
-        start: 'top 72%',
-        once: true,
-      },
-    });
-
-    studioTl
-      // 1. Золотой бейдж плавно всплывает (1.0 сек)
-      .fromTo(
-        '.gsap-studio-info > div:first-child',
-        { opacity: 0, y: 20 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          duration: 1.0, 
+      // 7. КАСКАД КАРТОЧЕК ОТЗЫВОВ (СТРОГО ПО ОЧЕРЕДИ: TOP 60%)
+      gsap.fromTo(
+        '#reviews .rounded-3xl',
+        { y: 45, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.15,
+          duration: 0.85,
           ease: 'power3.out',
-          force3D: true,
+          scrollTrigger: {
+            trigger: '#reviews',
+            start: 'top 60%',
+            once: true,
+          },
         }
-      )
-      // 2. Медленное скольжение заголовка из маски (1.4 сек)
-      .fromTo(
-        '.gsap-studio-heading',
-        { yPercent: 110, opacity: 0 },
-        { 
-          yPercent: 0, 
-          opacity: 1, 
-          duration: 1.4, 
-          ease: 'power3.out',
-          force3D: true,
-        },
-        '-=0.6'
-      )
-      // 3. Адрес и метро неторопливо выходят друг за другом (1.1 сек каждый, пауза 0.25 сек)
-      .fromTo(
-        '.gsap-studio-info .space-y-4 > div',
-        { opacity: 0, x: -25 },
-        { 
-          opacity: 1, 
-          x: 0, 
-          stagger: 0.25, 
-          duration: 1.1, 
-          ease: 'power3.out',
-          force3D: true,
-        },
-        '-=0.7'
-      )
-      // 4. Кнопка WhatsApp мягко проявляется (1.0 сек)
-      .fromTo(
-        '.gsap-studio-info a[href*="wa.me"]',
-        { opacity: 0, y: 20, scale: 0.94 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          scale: 1, 
-          duration: 1.0, 
-          ease: 'power3.out',
-          force3D: true,
-        },
-        '-=0.4'
-      )
-      // 5. Рамка с фото справа не спеша раскрывается (1.6 сек)
-      .fromTo(
-        '.gsap-studio .aspect-square',
-        { opacity: 0, scale: 0.90, y: 40 },
-        { 
-          opacity: 1, 
-          scale: 1, 
-          y: 0, 
-          duration: 1.6, 
-          ease: 'power3.out',
-          force3D: true,
-        },
-        0 // Стартует синхронно в самом начале
       );
 
-    // БАРХАТНЫЙ ПАРАЛЛАКС ФОТО ВНУТРИ РАМКИ ПРИ СКРОЛЛЕ
-    gsap.fromTo(
-      '.gsap-studio-img',
-      { scale: 1.2, yPercent: -12 },
-      {
-        scale: 1.05,
-        yPercent: 12,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.gsap-studio',
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 2, // Добавлена ещё большая инерция (2 вместо 1.5)
-        },
-      }
-    );
+      // 8. КАСКАД FAQ АККОРДЕОНА (TOP 60%)
+      gsap.fromTo(
+        '#faq .rounded-2xl',
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.1,
+          duration: 0.75,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '#faq',
+            start: 'top 60%',
+            once: true,
+          },
+        }
+      );
+
+      // 9. СТУДИЯ: ТЕКСТ И ФОТО
+      gsap.fromTo(
+        '.gsap-studio-info',
+        { opacity: 0, x: -30 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 0.85,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.gsap-studio',
+            start: 'top 60%',
+            once: true,
+          },
+        }
+      );
+
+      gsap.fromTo(
+        '.gsap-studio-img',
+        { scale: 1.2, opacity: 0 },
+        {
+          scale: 1,
+          opacity: 1,
+          duration: 1,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.gsap-studio',
+            start: 'top 60%',
+            once: true,
+          },
+        }
+      );
 
     }, mainRef);
 
@@ -352,7 +256,7 @@ reviewsTl
       {/* Прелоадер */}
       {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
 
-      {/* ГЛАВНЫЙ GSAP SMOOTH SCROLL ДЛЯ ВСЕГО КОНТЕНТА */}
+      {/* ГЛАВНЫЙ GSAP SMOOTH SCROLL */}
       <GsapSmoothScroll>
         <div
           ref={mainRef}
@@ -400,7 +304,7 @@ reviewsTl
             </div>
           </header>
 
-          {/* HERO SECTION (1-В-1 КАК У ТЕБЯ РАБОТАЛО) */}
+          {/* HERO SECTION (1-В-1 КАК У ТЕБЯ) */}
           <section className="gsap-hero relative min-h-[calc(100svh-5rem)] flex flex-col justify-center items-center px-6 py-6 sm:py-10 z-10">
             <div className="max-w-4xl mx-auto text-center gsap-hero-title flex flex-col items-center">
               
@@ -475,11 +379,11 @@ reviewsTl
             }}
           />
 
-          {/* УСЛУГИ И ЦЕНЫ (ЗАГОЛОВОК С ПЕРСОНАЛЬНЫМ ТРИГГЕРОМ gsap-pricing-title) */}
+          {/* УСЛУГИ И ЦЕНЫ (ЗАГОЛОВОК НА 100% НА МЕСТЕ) */}
           <section id="services" className="py-28 max-w-4xl mx-auto px-6 relative z-10">
             <div className="text-center mb-16">
-              <div className="overflow-hidden py-2 -my-2">
-                <h2 className="gsap-pricing-title text-4xl md:text-5xl font-serif text-cream-100">{t.pricing.title}</h2>
+              <div className="overflow-hidden py-1.5 -my-1.5">
+                <h2 className="gsap-reveal-text text-4xl md:text-5xl font-serif text-cream-100">{t.pricing.title}</h2>
               </div>
               <p className="mt-3 text-cream-200/60 text-sm md:text-base font-light">{t.pricing.subtitle}</p>
             </div>
@@ -523,13 +427,13 @@ reviewsTl
           {/* FAQ */}
           <FAQ lang={lang} />
 
-          {/* СТУДИЯ (ЗАГОЛОВОК С ПЕРСОНАЛЬНЫМ ТРИГГЕРОМ gsap-studio-heading) */}
+          {/* СТУДИЯ */}
           <section id="studio" className="gsap-studio py-24 bg-obsidian-900/80 border-t border-white/5 relative z-10">
             <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div className="gsap-studio-info">
                 <div className="text-xs uppercase tracking-[0.25em] font-semibold text-gold-400 mb-2">Madrid · Barrio de Salamanca</div>
-                <div className="overflow-hidden py-2 -my-2">
-                  <h2 className="gsap-studio-heading text-3xl md:text-5xl font-serif text-cream-100 mb-6">{t.footer.locationTitle}</h2>
+                <div className="overflow-hidden py-1.5 -my-1.5">
+                  <h2 className="gsap-reveal-text text-3xl md:text-5xl font-serif text-cream-100 mb-6">{t.footer.locationTitle}</h2>
                 </div>
 
                 <div className="space-y-4 text-sm text-cream-200/70 mb-8 font-light">
@@ -580,7 +484,7 @@ reviewsTl
             </div>
           </section>
 
-          {/* ФУТЕР */}
+          {/* ФУТЕР — ПОЛНОСТЬЮ ОТКРЫТ И ЧИТАЕМ */}
           <footer className="pt-16 pb-36 md:pb-24 bg-obsidian-950 border-t border-white/5 text-center text-xs text-cream-200/50 relative z-10 overflow-visible">
             <div className="max-w-4xl mx-auto px-6">
               <div className="font-serif text-2xl tracking-widest text-cream-100 mb-4 uppercase leading-relaxed">
@@ -623,9 +527,6 @@ reviewsTl
       />
       <CookieBanner lang={lang} isLoading={isLoading} />
       <StickyMobileBar lang={lang} onOpenBooking={() => { setSelectedService(''); setIsBookingOpen(true); }} />
-
-      {/* КНОПКА ВОЗВРАТА НАВЕРХ */}
-      <ScrollToTop />
     </>
   );
 }

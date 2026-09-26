@@ -13,7 +13,6 @@ import { GsapMagnetic } from './components/GsapMagnetic';
 import { GsapSmoothScroll } from './components/GsapSmoothScroll';
 
 // КОМПОНЕНТЫ
-import { ScrollToTop } from './components/ScrollToTop';
 import { ScrollProgress } from './components/ScrollProgress';
 import { CurvedMarquee } from './components/CurvedMarquee';
 import { FilmGrain } from './components/FilmGrain';
@@ -190,7 +189,7 @@ reviewsTl
     {
       y: 0,
       opacity: 1,
-      stagger: 0.3,
+      stagger: 0.1,
       duration: 0.8,
       ease: 'power3.out',
     }
@@ -205,7 +204,7 @@ reviewsTl
     {
       y: 0,
       opacity: 1,
-      stagger: 0.3, // Задержка между появлением каждой карточки
+      stagger: 0.15, // Задержка между появлением каждой карточки
       duration: 0.85,
       ease: 'power3.out',
     },
@@ -236,100 +235,55 @@ reviewsTl
      );
    });
 
-     // 9. СТУДИЯ: МЕДЛЕННОЕ БЛАГОРОДНОЕ ПОЯВЛЕНИЕ (SLOW LUXURY TIMELINE)
-     const studioTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: '.gsap-studio',
-        start: 'top 72%',
-        once: true,
-      },
-    });
-
-    studioTl
-      // 1. Золотой бейдж плавно всплывает (1.0 сек)
-      .fromTo(
-        '.gsap-studio-info > div:first-child',
-        { opacity: 0, y: 20 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          duration: 1.0, 
-          ease: 'power3.out',
-          force3D: true,
-        }
-      )
-      // 2. Медленное скольжение заголовка из маски (1.4 сек)
-      .fromTo(
+      // 9. СТУДИЯ: ПЕРСОНАЛЬНОЕ ПОЯВЛЕНИЕ ЗАГОЛОВКА UBICACIÓN & ESTUDIO (TOP 65%)
+      gsap.fromTo(
         '.gsap-studio-heading',
-        { yPercent: 110, opacity: 0 },
-        { 
-          yPercent: 0, 
-          opacity: 1, 
-          duration: 1.4, 
-          ease: 'power3.out',
-          force3D: true,
-        },
-        '-=0.6'
-      )
-      // 3. Адрес и метро неторопливо выходят друг за другом (1.1 сек каждый, пауза 0.25 сек)
-      .fromTo(
-        '.gsap-studio-info .space-y-4 > div',
-        { opacity: 0, x: -25 },
-        { 
-          opacity: 1, 
-          x: 0, 
-          stagger: 0.25, 
-          duration: 1.1, 
-          ease: 'power3.out',
-          force3D: true,
-        },
-        '-=0.7'
-      )
-      // 4. Кнопка WhatsApp мягко проявляется (1.0 сек)
-      .fromTo(
-        '.gsap-studio-info a[href*="wa.me"]',
-        { opacity: 0, y: 20, scale: 0.94 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          scale: 1, 
-          duration: 1.0, 
-          ease: 'power3.out',
-          force3D: true,
-        },
-        '-=0.4'
-      )
-      // 5. Рамка с фото справа не спеша раскрывается (1.6 сек)
-      .fromTo(
-        '.gsap-studio .aspect-square',
-        { opacity: 0, scale: 0.90, y: 40 },
-        { 
-          opacity: 1, 
-          scale: 1, 
-          y: 0, 
-          duration: 1.6, 
-          ease: 'power3.out',
-          force3D: true,
-        },
-        0 // Стартует синхронно в самом начале
+        { yPercent: 120, y: 0, opacity: 0 },
+        {
+          yPercent: 0,
+          y: 0,
+          opacity: 1,
+          duration: 1,
+          ease: 'power4.out',
+          scrollTrigger: {
+            trigger: '.gsap-studio-info',
+            start: 'top 65%',
+            once: true,
+          },
+        }
       );
 
-    // БАРХАТНЫЙ ПАРАЛЛАКС ФОТО ВНУТРИ РАМКИ ПРИ СКРОЛЛЕ
-    gsap.fromTo(
-      '.gsap-studio-img',
-      { scale: 1.2, yPercent: -12 },
-      {
-        scale: 1.05,
-        yPercent: 12,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.gsap-studio',
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 2, // Добавлена ещё большая инерция (2 вместо 1.5)
-        },
-      }
-    );
+      gsap.fromTo(
+        '.gsap-studio-info',
+        { opacity: 0, x: -30 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 0.85,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.gsap-studio-info',
+            start: 'top 65%',
+            once: true,
+          },
+        }
+      );
+
+      // МАСЛЯНЫЙ ПАРАЛЛАКС ФОТОГРАФИИ СТУДИИ
+      gsap.fromTo(
+        '.gsap-studio-img',
+        { scale: 1.25, y: -20 },
+        {
+          scale: 1,
+          y: 20,
+          scrollTrigger: {
+            trigger: '.gsap-studio',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 2,
+          },
+        }
+      );
 
     }, mainRef);
 
@@ -623,9 +577,6 @@ reviewsTl
       />
       <CookieBanner lang={lang} isLoading={isLoading} />
       <StickyMobileBar lang={lang} onOpenBooking={() => { setSelectedService(''); setIsBookingOpen(true); }} />
-
-      {/* КНОПКА ВОЗВРАТА НАВЕРХ */}
-      <ScrollToTop />
     </>
   );
 }

@@ -236,100 +236,73 @@ reviewsTl
      );
    });
 
-     // 9. СТУДИЯ: МЕДЛЕННОЕ БЛАГОРОДНОЕ ПОЯВЛЕНИЕ (SLOW LUXURY TIMELINE)
-     const studioTl = gsap.timeline({
-      scrollTrigger: {
-        trigger: '.gsap-studio',
-        start: 'top 72%',
-        once: true,
-      },
-    });
-
-    studioTl
-      // 1. Золотой бейдж плавно всплывает (1.0 сек)
-      .fromTo(
-        '.gsap-studio-info > div:first-child',
-        { opacity: 0, y: 20 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          duration: 1.0, 
-          ease: 'power3.out',
-          force3D: true,
-        }
-      )
-      // 2. Медленное скольжение заголовка из маски (1.4 сек)
-      .fromTo(
-        '.gsap-studio-heading',
-        { yPercent: 110, opacity: 0 },
-        { 
-          yPercent: 0, 
-          opacity: 1, 
-          duration: 1.4, 
-          ease: 'power3.out',
-          force3D: true,
-        },
-        '-=0.6'
-      )
-      // 3. Адрес и метро неторопливо выходят друг за другом (1.1 сек каждый, пауза 0.25 сек)
-      .fromTo(
-        '.gsap-studio-info .space-y-4 > div',
-        { opacity: 0, x: -25 },
-        { 
-          opacity: 1, 
-          x: 0, 
-          stagger: 0.25, 
-          duration: 1.1, 
-          ease: 'power3.out',
-          force3D: true,
-        },
-        '-=0.7'
-      )
-      // 4. Кнопка WhatsApp мягко проявляется (1.0 сек)
-      .fromTo(
-        '.gsap-studio-info a[href*="wa.me"]',
-        { opacity: 0, y: 20, scale: 0.94 },
-        { 
-          opacity: 1, 
-          y: 0, 
-          scale: 1, 
-          duration: 1.0, 
-          ease: 'power3.out',
-          force3D: true,
-        },
-        '-=0.4'
-      )
-      // 5. Рамка с фото справа не спеша раскрывается (1.6 сек)
-      .fromTo(
-        '.gsap-studio .aspect-square',
-        { opacity: 0, scale: 0.90, y: 40 },
-        { 
-          opacity: 1, 
-          scale: 1, 
-          y: 0, 
-          duration: 1.6, 
-          ease: 'power3.out',
-          force3D: true,
-        },
-        0 // Стартует синхронно в самом начале
-      );
-
-    // БАРХАТНЫЙ ПАРАЛЛАКС ФОТО ВНУТРИ РАМКИ ПРИ СКРОЛЛЕ
-    gsap.fromTo(
-      '.gsap-studio-img',
-      { scale: 1.2, yPercent: -12 },
-      {
-        scale: 1.05,
-        yPercent: 12,
-        ease: 'none',
+      // 9. СТУДИЯ: КИНЕМАТОГРАФИЧНОЕ ПОЯВЛЕНИЕ (TIMELINE + ПАРАЛЛАКС)
+      const studioTl = gsap.timeline({
         scrollTrigger: {
           trigger: '.gsap-studio',
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: 2, // Добавлена ещё большая инерция (2 вместо 1.5)
+          start: 'top 70%',
+          once: true,
         },
-      }
-    );
+      });
+
+      studioTl
+        // 1. Появление золотого бейджа "Madrid · Barrio de Salamanca"
+        .fromTo(
+          '.gsap-studio-info > div:first-child',
+          { opacity: 0, y: 15 },
+          { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }
+        )
+        // 2. Элегантный выезд заголовка из невидимой маски
+        .fromTo(
+          '.gsap-studio-heading',
+          { yPercent: 110, opacity: 0 },
+          { yPercent: 0, opacity: 1, duration: 0.9, ease: 'power4.out' },
+          '-=0.4'
+        )
+        // 3. Адрес и станция метро появляются по очереди
+        .fromTo(
+          '.gsap-studio-info .space-y-4 > div',
+          { opacity: 0, x: -20 },
+          { 
+            opacity: 1, 
+            x: 0, 
+            stagger: 0.15, 
+            duration: 0.7, 
+            ease: 'power3.out' 
+          },
+          '-=0.5'
+        )
+        // 4. Кнопка WhatsApp Studio Directo
+        .fromTo(
+          '.gsap-studio-info a[href*="wa.me"]',
+          { opacity: 0, y: 15, scale: 0.95 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'back.out(1.3)' },
+          '-=0.3'
+        )
+        // 5. Синхронное появление рамки с фото справа (плавный зум-ин и фейд)
+        .fromTo(
+          '.gsap-studio .aspect-square',
+          { opacity: 0, scale: 0.92, y: 30 },
+          { opacity: 1, scale: 1, y: 0, duration: 1.1, ease: 'power3.out' },
+          0 // Начинается в самом начале таймлайна вместе с левой частью
+        );
+
+      // БАРХАТНЫЙ ПАРАЛЛАКС ФОТО ВНУТРИ РАМКИ ПРИ СКРОЛЛЕ
+      gsap.fromTo(
+        '.gsap-studio-img',
+        { scale: 1.2, yPercent: -12 },
+        {
+          scale: 1.05,
+          yPercent: 12,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.gsap-studio',
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1.5,
+          },
+        }
+      );
 
     }, mainRef);
 

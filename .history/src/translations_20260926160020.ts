@@ -72,54 +72,6 @@ slider: {
         { name: 'Mantenimiento (a las 3 semanas)', price: '45€', time: '60 min', desc: 'Relleno y reposición de las pestañas que han completado su ciclo natural.' },
       ]
     },
-
-    marquee: 'BELLEZA NATURAL · AUTONOMÍA 100% · MADRID SALAMANCA · RETENCIÓN DE 6 SEMANAS · MIRADA BESPOKE · ',
-    reviews: {
-      tag: 'Social Proof · Salamanca',
-      title: 'La Experiencia en Primera Persona',
-      googleBadge: '5.0 ★★★★★ en Google Maps (+140 valoraciones)',
-      items: [
-        {
-          quote: 'Llevo 3 años haciéndome las pestañas con ella. Es la única que respeta la salud de mi pestaña natural y el efecto mojado aguanta intacto todo el verano en la playa y piscina.',
-          author: 'Lucía M.',
-          location: 'Calle Serrano, Madrid',
-        },
-        {
-          quote: 'El estudio es un remanso de paz en pleno barrio de Salamanca. La camilla ergonómica efecto nube hace que te duermas y el resultado es pura alta costura, nada artificial.',
-          author: 'Beatriz C.',
-          location: 'Recoletos, Madrid',
-        },
-        {
-          quote: 'Tenía pánico a quedarme sin pestañas por una mala experiencia en otro sitio. El análisis fisionómico previo y la delicadeza con la que trabaja no tienen comparación.',
-          author: 'Elena R.',
-          location: 'Castellana, Madrid',
-        },
-      ]
-    },
-    faq: {
-      tag: 'Dudas Frecuentes',
-      title: 'Todo lo que Necesitas Saber',
-      subtitle: 'Transparencia absoluta sobre la salud de tu mirada y el cuidado de tus extensiones.',
-      items: [
-        {
-          q: '¿Puedo bañarme en la playa o piscina con las extensiones?',
-          a: 'Sí, totalmente. Tras las primeras 24 horas posteriores a la aplicación, el adhesivo médico polimeriza al 100%, resistiendo perfectamente el agua salada del mar, el cloro de la piscina y el sudor.',
-        },
-        {
-          q: '¿Dañará o debilitará mis pestañas naturales?',
-          a: 'Rotundamente no. Nuestro método aísla cada pestaña sin склеек (sin adhesiones indebidas). Seleccionamos un grosor ultrafino (0.05 - 0.07 mm) adaptado a la fuerza de tu propio pelo, permitiendo que cumpla su ciclo biológico de caída natural sin sobrepeso.',
-        },
-        {
-          q: '¿Puedo hacerme el tratamiento si uso lentillas o tengo ojos sensibles?',
-          a: 'Sí, es 100% compatible. Solo te pediremos retirar las lentillas durante la sesión para mayor comodidad. Usamos parches de hidrogel descongestionantes y adhesivos hipoalergénicos con registro europeo CPNP libres de formaldehído.',
-        },
-        {
-          q: '¿Cuánto dura la sesión y cada cuánto debo hacer el retoque?',
-          a: 'La primera puesta completa dura entre 90 y 110 minutos de relajación total en camilla ergonómica. El mantenimiento se recomienda cada 3 o 4 semanas para reponer las pestañas que han caído naturalmente.',
-        },
-      ]
-    },
-
     footer: {
       locationTitle: 'Ubicación & Estudio',
       address: 'Calle de Velázquez 48, 1º Izq, Salamanca, 28001 Madrid',
