@@ -32,42 +32,49 @@ export function App() {
     if (isLoading) return;
 
     const ctx = gsap.context(() => {
-      // 1. БЕЗУПРЕЧНЫЙ ВХОД ПЕРВОГО ЭКРАНА (fromTo гарантирует появление)
-      const heroTl = gsap.timeline();
+      // 1. РЕЖИССИРОВАННЫЙ ВХОД ПЕРВОГО ЭКРАНА (БЕЗ МИГАНИЙ И БЕЗ СКРОЛЛА)
+      const heroTl = gsap.timeline({ delay: 0.15 });
 
       heroTl
-        .fromTo(
-          '.gsap-hero-badge',
-          { opacity: 0, y: 15 },
-          { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }
-        )
-        .fromTo(
+        .to('.gsap-hero-badge', {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          ease: 'power3.out',
+        })
+        .to(
           '.gsap-hero .gsap-reveal-text',
-          { yPercent: 120, y: 0, opacity: 0 },
           {
             yPercent: 0,
-            y: 0,
             opacity: 1,
             duration: 1.2,
-            stagger: 0.18,
+            stagger: 0.18, // Вторая строка выплывает чуть позже первой
             ease: 'power4.out',
           },
-          '-=0.4'
+          '-=0.5'
         )
-        .fromTo(
+        .to(
           '.gsap-hero-desc',
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+          },
           '-=0.7'
         )
-        .fromTo(
+        .to(
           '.gsap-hero-cta',
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+          },
           '-=0.7'
         );
 
-      // 2. ПАРАЛЛАКС HERO ПРИ СКРОЛЛЕ
+      // 2. ПАРАЛЛАКС HERO ПРИ ПОСЛЕДУЮЩЕМ СКРОЛЛЕ ВНИЗ
       gsap.to('.gsap-hero-title', {
         y: -50,
         opacity: 0.3,
@@ -79,16 +86,15 @@ export function App() {
         },
       });
 
-      // 3. ВЫЛЕТ СТРОК ДЛЯ ОСТАЛЬНЫХ СЕКЦИЙ (ПРИ СКРОЛЛЕ)
+      // 3. ВЫЛЕТ СТРОК ДЛЯ ОСТАЛЬНЫХ СЕКЦИЙ САЙТА (ПРИ СКРОЛЛЕ)
       gsap.utils
         .toArray<HTMLElement>('section:not(.gsap-hero) .gsap-reveal-text')
         .forEach((text) => {
           gsap.fromTo(
             text,
-            { yPercent: 120, y: 0, opacity: 0 },
+            { yPercent: 120, opacity: 0 },
             {
               yPercent: 0,
-              y: 0,
               opacity: 1,
               duration: 1.1,
               ease: 'power4.out',
@@ -205,23 +211,26 @@ export function App() {
           </div>
         </header>
 
-       {/* HERO SECTION */}
+       {/* HERO SECTION — ИДЕАЛЬНОЕ ЗОЛОТОЕ СЕЧЕНИЕ И ЦЕНТРОВКА В ОКНЕ */}
        <section className="gsap-hero relative min-h-[calc(100svh-5rem)] flex flex-col justify-center items-center px-6 py-6 sm:py-10 z-10">
           <div className="max-w-4xl mx-auto text-center gsap-hero-title flex flex-col items-center">
             
-            {/* Бейдж с классом gsap-hero-badge */}
-            <div className="gsap-hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-obsidian-850 border border-gold-500/20 text-gold-400 text-[11px] font-medium mb-5 sm:mb-6 shadow-sm">
+            {/* Бейдж свободных мест */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-obsidian-850 border border-gold-500/20 text-gold-400 text-[11px] font-medium mb-5 sm:mb-6 shadow-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-ping"></span>
               {t.nav.spotsLeft}
             </div>
 
-            {/* H1 Заголовок */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif text-cream-50 leading-[1.2] tracking-tight">
+          {/* H1 Заголовок с полным иммунитетом от обрезания хвостиков букв (f, p, y) */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif text-cream-50 leading-[1.2] tracking-tight">
+              {/* Первая строка */}
               <div className="overflow-hidden pb-4 -mb-4 px-3 -mx-3">
                 <div className="gsap-reveal-text inline-block pb-2">
                   {t.hero.titlePrimary}
                 </div>
               </div>
+
+              {/* Вторая строка (с курсивной буквой f) — увеличен буфер градиента до 32px */}
               <div className="overflow-hidden pb-8 -mb-8 px-6 -mx-6 mt-1">
                 <div className="gsap-reveal-text inline-block italic font-light bg-gradient-to-r from-gold-300 via-gold-400 to-gold-600 bg-clip-text text-transparent pb-8 -mb-8 pr-6 pl-1">
                   {t.hero.titleSecondary}
@@ -229,13 +238,13 @@ export function App() {
               </div>
             </h1>
 
-            {/* Описание с классом gsap-hero-desc */}
-            <p className="gsap-hero-desc mt-5 sm:mt-6 max-w-xl mx-auto text-sm sm:text-base text-cream-200/70 font-light leading-relaxed">
+            {/* Описание с гармоничным отступом */}
+            <p className="mt-5 sm:mt-6 max-w-xl mx-auto text-sm sm:text-base text-cream-200/70 font-light leading-relaxed">
               {t.hero.desc}
             </p>
 
-            {/* Кнопки с классом gsap-hero-cta */}
-            <div className="gsap-hero-cta mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto">
+            {/* Кнопки CTA — полностью в зоне видимости первого экрана */}
+            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto">
               <GsapMagnetic
                 onClick={() => { setSelectedService(''); setIsBookingOpen(true); }}
                 className="w-full sm:w-auto px-8 py-3.5 sm:px-9 sm:py-4 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs uppercase tracking-widest font-bold transition shadow-[0_0_30px_rgba(212,175,55,0.35)] active:scale-95"

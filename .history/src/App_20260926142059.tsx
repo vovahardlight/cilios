@@ -32,42 +32,49 @@ export function App() {
     if (isLoading) return;
 
     const ctx = gsap.context(() => {
-      // 1. БЕЗУПРЕЧНЫЙ ВХОД ПЕРВОГО ЭКРАНА (fromTo гарантирует появление)
-      const heroTl = gsap.timeline();
+      // 1. РЕЖИССИРОВАННЫЙ ВХОД ПЕРВОГО ЭКРАНА (БЕЗ МИГАНИЙ И БЕЗ СКРОЛЛА)
+      const heroTl = gsap.timeline({ delay: 0.15 });
 
       heroTl
-        .fromTo(
-          '.gsap-hero-badge',
-          { opacity: 0, y: 15 },
-          { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }
-        )
-        .fromTo(
+        .to('.gsap-hero-badge', {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          ease: 'power3.out',
+        })
+        .to(
           '.gsap-hero .gsap-reveal-text',
-          { yPercent: 120, y: 0, opacity: 0 },
           {
             yPercent: 0,
-            y: 0,
             opacity: 1,
             duration: 1.2,
-            stagger: 0.18,
+            stagger: 0.18, // Вторая строка выплывает чуть позже первой
             ease: 'power4.out',
           },
-          '-=0.4'
+          '-=0.5'
         )
-        .fromTo(
+        .to(
           '.gsap-hero-desc',
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+          },
           '-=0.7'
         )
-        .fromTo(
+        .to(
           '.gsap-hero-cta',
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+          },
           '-=0.7'
         );
 
-      // 2. ПАРАЛЛАКС HERO ПРИ СКРОЛЛЕ
+      // 2. ПАРАЛЛАКС HERO ПРИ ПОСЛЕДУЮЩЕМ СКРОЛЛЕ ВНИЗ
       gsap.to('.gsap-hero-title', {
         y: -50,
         opacity: 0.3,
@@ -79,16 +86,15 @@ export function App() {
         },
       });
 
-      // 3. ВЫЛЕТ СТРОК ДЛЯ ОСТАЛЬНЫХ СЕКЦИЙ (ПРИ СКРОЛЛЕ)
+      // 3. ВЫЛЕТ СТРОК ДЛЯ ОСТАЛЬНЫХ СЕКЦИЙ САЙТА (ПРИ СКРОЛЛЕ)
       gsap.utils
         .toArray<HTMLElement>('section:not(.gsap-hero) .gsap-reveal-text')
         .forEach((text) => {
           gsap.fromTo(
             text,
-            { yPercent: 120, y: 0, opacity: 0 },
+            { yPercent: 120, opacity: 0 },
             {
               yPercent: 0,
-              y: 0,
               opacity: 1,
               duration: 1.1,
               ease: 'power4.out',

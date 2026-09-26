@@ -96,9 +96,9 @@ export const AmbientCanvas: React.FC = () => {
       return {
         x: Math.random() * width,
         y: Math.random() * height,
-        length: depth * 10 + 7,
+        length: depth * 14 + 10,
         curl: (Math.random() * 4 + 3) * (Math.random() > 0.5 ? 1 : -1),
-        thickness: depth * 0.2 + 0.1, // Четкая толщина от 0.6px до 1.3px
+        thickness: depth * 0.7 + 0.6, // Четкая толщина от 0.6px до 1.3px
         angle: Math.random() * Math.PI * 2,
         rotSpeed: (Math.random() - 0.5) * 0.012,
         speedY: (Math.random() * 0.22 + 0.08) * (depth * 0.6 + 0.7),
