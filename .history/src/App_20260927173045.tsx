@@ -559,38 +559,31 @@ export function App() {
             </div>
 
             <div className="gsap-services-list space-y-4">
-            {t.pricing.items.map((item: any, idx: number) => (
-              <div
-                key={idx}
-                className="gsap-service-card p-8 rounded-2xl bg-obsidian-900 border border-white/5 hover:border-gold-500/40 hover:-translate-y-1 transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6"
-              >
-                <div>
-                  {/* МИКРО-ТЕГИ HAUTE COUTURE И ВРЕМЯ */}
-                  <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-gold-400 bg-gold-500/10 border border-gold-500/20 px-2.5 py-0.5 rounded-full">
-                      {item.tag}
-                    </span>
-                    <span className="text-[10px] text-cream-200/50 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
-                      {item.time}
-                    </span>
+              {t.pricing.items.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="gsap-service-card p-8 rounded-2xl bg-obsidian-900 border border-white/5 hover:border-gold-500/40 hover:-translate-y-1 transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6"
+                >
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <h3 className="font-serif text-2xl font-normal text-cream-100">{item.name}</h3>
+                      <span className="text-[11px] text-gold-400 bg-gold-500/10 border border-gold-500/20 px-2.5 py-0.5 rounded-full">{item.time}</span>
+                    </div>
+                    <p className="text-xs text-cream-200/60 mt-2 max-w-xl leading-relaxed">{item.desc}</p>
                   </div>
 
-                  <h3 className="font-serif text-2xl font-normal text-cream-100">{item.name}</h3>
-                  <p className="text-xs text-cream-200/60 mt-2 max-w-xl leading-relaxed">{item.desc}</p>
+                  <div className="flex items-center justify-between md:justify-end gap-6 pt-4 md:pt-0 border-t md:border-t-0 border-white/5">
+                    <span className="text-3xl font-serif text-gold-400">{item.price}</span>
+                    <GsapMagnetic
+                      onClick={() => { setSelectedService(item.name); setIsBookingOpen(true); }}
+                      className="px-6 py-3 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs font-bold uppercase tracking-wider transition shadow"
+                    >
+                      {t.nav.book}
+                    </GsapMagnetic>
+                  </div>
                 </div>
-
-                <div className="flex items-center justify-between md:justify-end gap-6 pt-4 md:pt-0 border-t md:border-t-0 border-white/5">
-                  <span className="text-3xl font-serif text-gold-400">{item.price}</span>
-                  <GsapMagnetic
-                    onClick={() => { setSelectedService(item.name); setIsBookingOpen(true); }}
-                    className="px-6 py-3 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs font-bold uppercase tracking-wider transition shadow"
-                  >
-                    {t.nav.book}
-                  </GsapMagnetic>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
             <div className="mt-10 p-5 rounded-2xl bg-obsidian-900/80 border border-gold-500/20 text-center text-xs text-cream-200/70">
               <ShieldCheck className="w-4 h-4 text-gold-400 inline mr-2 -mt-0.5" />
