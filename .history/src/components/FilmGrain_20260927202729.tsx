@@ -42,9 +42,10 @@ export const FilmGrain: React.FC = () => {
 
   return (
     <div
-    ref={grainRef}
-    aria-hidden="true"
-    className="fixed inset-0 pointer-events-none z-[45] opacity-[0.26] bg-repeat"
-  />
+      ref={grainRef}
+      aria-hidden="true"
+      /* Плотное, мягкое пудровое покрытие без дыр и без резкого песка */
+      className="fixed inset-0 pointer-events-none z-[45] opacity-[0.55] bg-repeat"
+    />
   );
 };
