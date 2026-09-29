@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { content, type Lang } from './translations';
+
 import { Preloader } from './components/Preloader';
 import { AmbientCanvas } from './components/AmbientCanvas';
 import { BeforeAfter } from './components/BeforeAfter';
@@ -12,7 +13,6 @@ import { GsapCursor } from './components/GsapCursor';
 import { GsapMagnetic } from './components/GsapMagnetic';
 import { GsapSmoothScroll } from './components/GsapSmoothScroll';
 
-// КОМПОНЕНТЫ
 import { ScrollToTop } from './components/ScrollToTop';
 import { ScrollProgress } from './components/ScrollProgress';
 import { CurvedMarquee } from './components/CurvedMarquee';
@@ -20,70 +20,67 @@ import { FilmGrain } from './components/FilmGrain';
 import { Reviews } from './components/Reviews';
 import { FAQ } from './components/FAQ';
 
-// CMS & SEO МОДУЛИ
-import { ContentProvider, useContent } from './context/ContentContext';
-import { AdminModal } from './components/admin/AdminModal';
-import { AdminLogin } from './components/admin/AdminLogin';
+import {
+  Sparkles,
+  MapPin,
+  Clock,
+  ShieldCheck,
+  MessageCircle,
+  ArrowUpRight,
+} from 'lucide-react';
 
-import { Sparkles, MapPin, Clock, ShieldCheck, MessageCircle, ArrowUpRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
-  const { data } = useContent(); // Динамические данные из CMS в реальном времени
+export function App() {
+  const [lang, setLang] = useState<Lang>('es');
   const [isLoading, setIsLoading] = useState(true);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string>('');
 
   const t = content[lang];
   const mainRef = useRef<HTMLDivElement>(null);
 
-  // Список услуг (из CMS или запасной из translations)
-  const currentServices = data?.services?.[lang] || t.pricing.items;
-  // Динамический статус свободных мест из CMS
-  const currentSpots = data?.spotsLeft?.[lang] || t.nav.spotsLeft;
-
-  // ГОРЯЧИЕ КЛАВИШИ ДЛЯ ВХОДА В CMS: Cmd+Shift+A (Mac) или Ctrl+Shift+A (Win)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
-        e.preventDefault();
-        setIsLoginOpen(true);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
   useEffect(() => {
     if (isLoading) return;
 
-    const timer = setTimeout(() => {
+    const refreshTimer = setTimeout(() => {
       ScrollTrigger.refresh();
     }, 150);
 
     const ctx = gsap.context(() => {
-      // 1. ПЛАВНЫЙ ВХОД ПЕРВОГО ЭКРАНА
+      // ============================================================
+      // HERO — quiet luxury / editorial entrance
+      // ============================================================
+
       const heroTl = gsap.timeline();
 
       heroTl
         .fromTo(
           '.gsap-hero-badge',
-          { opacity: 0, y: 15 },
-          { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }
+          {
+            opacity: 0,
+            y: 15,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.7,
+            ease: 'power3.out',
+          }
         )
         .fromTo(
           '.gsap-hero .gsap-reveal-text',
-          { yPercent: 120, y: 0, opacity: 0 },
+          {
+            yPercent: 120,
+            opacity: 0,
+          },
           {
             yPercent: 0,
-            y: 0,
             opacity: 1,
             duration: 1.2,
             stagger: 0.18,
@@ -93,20 +90,36 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         )
         .fromTo(
           '.gsap-hero-desc',
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
+          {
+            opacity: 0,
+            y: 18,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: 'power3.out',
+          },
           '-=0.7'
         )
         .fromTo(
           '.gsap-hero-cta',
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
+          {
+            opacity: 0,
+            y: 18,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: 'power3.out',
+          },
           '-=0.7'
         );
 
-      // ПАРАЛЛАКС ЗАГОЛОВКА HERO ПРИ СКРОЛЛЕ
+      // Очень мягкое затухание и подъём Hero при уходе со сцены.
       gsap.to('.gsap-hero-title', {
-        y: -60,
+        y: -55,
         opacity: 0.25,
         scrollTrigger: {
           trigger: '.gsap-hero',
@@ -116,84 +129,125 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         },
       });
 
-      // 2. ДВЕ РАСКРЫВАЮЩИЕСЯ ЛАЗЕРНЫЕ ЛИНИИ
+      // ============================================================
+      // GOLD DIVIDERS — только для двух крупных переходов
+      // ============================================================
+
       gsap.utils.toArray<HTMLElement>('.gsap-divider').forEach((divider) => {
         gsap.fromTo(
           divider,
-          { scaleX: 0, opacity: 0 },
+          {
+            scaleX: 0,
+            opacity: 0,
+          },
           {
             scaleX: 1,
             opacity: 1,
-            duration: 1.3,
+            duration: 1.2,
             ease: 'power3.out',
             scrollTrigger: {
               trigger: divider,
-              start: 'top 75%',
+              start: 'top 78%',
               once: true,
             },
           }
         );
       });
 
-      // 3. ЦИФРЫ ДОВЕРИЯ (TOP 65%)
+      // ============================================================
+      // STATS
+      // ============================================================
+
       gsap.fromTo(
         '.gsap-stat-item',
-        { y: 40, opacity: 0 },
+        {
+          y: 32,
+          opacity: 0,
+        },
         {
           y: 0,
           opacity: 1,
-          stagger: 0.14,
-          duration: 0.85,
+          stagger: 0.12,
+          duration: 0.8,
           ease: 'power3.out',
           scrollTrigger: {
             trigger: '.gsap-stats',
-            start: 'top 65%',
+            start: 'top 68%',
             once: true,
           },
         }
       );
 
-      // СЧЕТЧИКИ
       const yearsObj = { val: 0 };
+
       gsap.to(yearsObj, {
         val: 6,
         duration: 1.8,
         ease: 'power2.out',
-        scrollTrigger: { trigger: '.gsap-stats', start: 'top 65%', once: true },
+        scrollTrigger: {
+          trigger: '.gsap-stats',
+          start: 'top 68%',
+          once: true,
+        },
         onUpdate: () => {
           const el = document.querySelector('.gsap-count-years');
-          if (el) el.textContent = Math.round(yearsObj.val).toString();
+
+          if (el) {
+            el.textContent = Math.round(yearsObj.val).toString();
+          }
         },
       });
 
       const weeksObj = { val: 0 };
+
       gsap.to(weeksObj, {
         val: 6,
         duration: 1.8,
         ease: 'power2.out',
-        scrollTrigger: { trigger: '.gsap-stats', start: 'top 65%', once: true },
+        scrollTrigger: {
+          trigger: '.gsap-stats',
+          start: 'top 68%',
+          once: true,
+        },
         onUpdate: () => {
           const el = document.querySelector('.gsap-count-weeks');
-          if (el) el.textContent = Math.round(weeksObj.val).toString();
+
+          if (el) {
+            el.textContent = Math.round(weeksObj.val).toString();
+          }
         },
       });
 
       const comfortObj = { val: 0 };
+
       gsap.to(comfortObj, {
         val: 100,
         duration: 2.2,
         ease: 'power3.out',
-        scrollTrigger: { trigger: '.gsap-stats', start: 'top 65%', once: true },
+        scrollTrigger: {
+          trigger: '.gsap-stats',
+          start: 'top 68%',
+          once: true,
+        },
         onUpdate: () => {
           const el = document.querySelector('.gsap-count-comfort');
-          if (el) el.textContent = Math.round(comfortObj.val).toString();
+
+          if (el) {
+            el.textContent = Math.round(comfortObj.val).toString();
+          }
         },
       });
 
-      // 4. СЛАЙДЕР ДО/ПОСЛЕ (TOP 60%)
+      // ============================================================
+      // BEFORE / AFTER
+      // ============================================================
+
       gsap.fromTo(
         '#results',
-        { opacity: 0, y: 40 },
+        {
+          opacity: 0,
+          y: 35,
+        },
         {
           opacity: 1,
           y: 0,
@@ -201,55 +255,67 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
           ease: 'power3.out',
           scrollTrigger: {
             trigger: '#results',
-            start: 'top 60%',
+            start: 'top 62%',
             once: true,
           },
         }
       );
 
-      // 5. СЕКЦИЯ ЦЕН: ЗАГОЛОВОК
+      // ============================================================
+      // SERVICES
+      // ============================================================
+
       gsap.fromTo(
         '.gsap-pricing-title',
-        { yPercent: 120, y: 0, opacity: 0 },
+        {
+          yPercent: 115,
+          opacity: 0,
+        },
         {
           yPercent: 0,
-          y: 0,
           opacity: 1,
           duration: 1,
           ease: 'power4.out',
           scrollTrigger: {
             trigger: '#services .text-center',
-            start: 'top 65%',
+            start: 'top 68%',
             once: true,
           },
         }
       );
 
-      // КАРТОЧКИ УСЛУГ (EDITORIAL LIST)
-      const serviceCards = gsap.utils.toArray<HTMLElement>('.gsap-service-card');
-      serviceCards.forEach((card) => {
+      const serviceRows =
+        gsap.utils.toArray<HTMLElement>('.gsap-service-card');
+
+      serviceRows.forEach((row) => {
         gsap.fromTo(
-          card,
-          { y: 35, opacity: 0 },
+          row,
+          {
+            y: 32,
+            opacity: 0,
+          },
           {
             y: 0,
             opacity: 1,
-            duration: 0.75,
+            duration: 0.8,
             ease: 'power3.out',
             scrollTrigger: {
-              trigger: card,
-              start: 'top 70%',
+              trigger: row,
+              start: 'top 74%',
               once: true,
             },
           }
         );
       });
 
-      // 6. ОТЗЫВЫ
+      // ============================================================
+      // REVIEWS
+      // ============================================================
+
       const reviewsTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#reviews',
-          start: 'top 65%',
+          start: 'top 68%',
           once: true,
         },
       });
@@ -257,34 +323,48 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
       reviewsTl
         .fromTo(
           '#reviews .text-center > *, #reviews h2',
-          { y: 35, opacity: 0 },
+          {
+            y: 30,
+            opacity: 0,
+          },
           {
             y: 0,
             opacity: 1,
-            stagger: 0.3,
+            stagger: 0.25,
             duration: 0.8,
             ease: 'power3.out',
           }
         )
         .fromTo(
           '#reviews .gsap-review-card',
-          { y: 50, opacity: 0 },
+          {
+            y: 40,
+            opacity: 0,
+          },
           {
             y: 0,
             opacity: 1,
-            stagger: 0.3,
+            stagger: 0.22,
             duration: 0.85,
             ease: 'power3.out',
           },
           '-=0.4'
         );
 
-      // 7. FAQ АККОРДЕОН
-      const faqItems = gsap.utils.toArray<HTMLElement>('#faq .gsap-faq-item');
+      // ============================================================
+      // FAQ
+      // ============================================================
+
+      const faqItems =
+        gsap.utils.toArray<HTMLElement>('#faq .gsap-faq-item');
+
       faqItems.forEach((item) => {
         gsap.fromTo(
           item,
-          { y: 35, opacity: 0 },
+          {
+            y: 28,
+            opacity: 0,
+          },
           {
             y: 0,
             opacity: 1,
@@ -292,14 +372,17 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             ease: 'power3.out',
             scrollTrigger: {
               trigger: item,
-              start: 'top 70%',
+              start: 'top 74%',
               once: true,
             },
           }
         );
       });
 
-      // 8. СТУДИЯ: МЕДЛЕННЫЙ ТАЙМЛАЙН
+      // ============================================================
+      // STUDIO
+      // ============================================================
+
       const studioTl = gsap.timeline({
         scrollTrigger: {
           trigger: '.gsap-studio',
@@ -311,41 +394,87 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
       studioTl
         .fromTo(
           '.gsap-studio-info > div:first-child',
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 1.0, ease: 'power3.out', force3D: true }
+          {
+            opacity: 0,
+            y: 18,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+          }
         )
         .fromTo(
           '.gsap-studio-heading',
-          { yPercent: 110, opacity: 0 },
-          { yPercent: 0, opacity: 1, duration: 1.4, ease: 'power3.out', force3D: true },
-          '-=0.6'
+          {
+            yPercent: 110,
+            opacity: 0,
+          },
+          {
+            yPercent: 0,
+            opacity: 1,
+            duration: 1.3,
+            ease: 'power3.out',
+          },
+          '-=0.55'
         )
         .fromTo(
           '.gsap-studio-info .space-y-4 > div',
-          { opacity: 0, x: -25 },
-          { opacity: 1, x: 0, stagger: 0.25, duration: 1.1, ease: 'power3.out', force3D: true },
-          '-=0.7'
+          {
+            opacity: 0,
+            x: -20,
+          },
+          {
+            opacity: 1,
+            x: 0,
+            stagger: 0.22,
+            duration: 1,
+            ease: 'power3.out',
+          },
+          '-=0.65'
         )
         .fromTo(
-          '.gsap-studio-info a[href*="wa.me"]',
-          { opacity: 0, y: 20, scale: 0.94 },
-          { opacity: 1, y: 0, scale: 1, duration: 1.0, ease: 'power3.out', force3D: true },
-          '-=0.4'
+          '.gsap-studio-info .studio-whatsapp-link',
+          {
+            opacity: 0,
+            y: 16,
+          },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.9,
+            ease: 'power3.out',
+          },
+          '-=0.35'
         )
         .fromTo(
           '.gsap-studio .aspect-square',
-          { opacity: 0, scale: 0.90, y: 40 },
-          { opacity: 1, scale: 1, y: 0, duration: 1.6, ease: 'power3.out', force3D: true },
+          {
+            opacity: 0,
+            scale: 0.95,
+            y: 25,
+          },
+          {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 1.4,
+            ease: 'power3.out',
+          },
           0
         );
 
-      // ПАРАЛЛАКС ФОТО ВНУТРИ СТУДИИ
+      // Мягкий параллакс студийного изображения.
       gsap.fromTo(
         '.gsap-studio-img',
-        { scale: 1.2, yPercent: -12 },
+        {
+          scale: 1.16,
+          yPercent: -10,
+        },
         {
           scale: 1.05,
-          yPercent: 12,
+          yPercent: 10,
           ease: 'none',
           scrollTrigger: {
             trigger: '.gsap-studio',
@@ -355,11 +484,10 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
           },
         }
       );
-
     }, mainRef);
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(refreshTimer);
       ctx.revert();
     };
   }, [isLoading]);
@@ -368,16 +496,14 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
     <>
       <GsapCursor />
 
-      {/* Золотая нить прогресса скролла */}
       <ScrollProgress />
 
-      {/* Бархатное пленочное зерно */}
-      <FilmGrain />
+      {isLoading && (
+        <Preloader
+          onComplete={() => setIsLoading(false)}
+        />
+      )}
 
-      {/* Прелоадер */}
-      {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
-
-      {/* ГЛАВНЫЙ GSAP SMOOTH SCROLL ДЛЯ ВСЕГО КОНТЕНТА */}
       <GsapSmoothScroll>
         <div
           ref={mainRef}
@@ -385,39 +511,83 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         >
           <AmbientCanvas />
 
-          {/* ШАПКА */}
-          <header className="sticky top-0 z-40 bg-obsidian-950/70 backdrop-blur-xl border-b border-white/5">
+          {/* ========================================================
+              HEADER
+          ======================================================== */}
+
+          <header className="sticky top-0 z-40 bg-obsidian-950/75 backdrop-blur-xl border-b border-white/5">
             <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-              <a href="#" className="font-serif text-2xl tracking-[0.2em] text-cream-100 uppercase font-light">
-                Lash <span className="text-gold-400 font-normal">Atelier</span>
+              <a
+                href="#"
+                className="font-serif text-2xl tracking-[0.2em] text-cream-100 uppercase font-light"
+              >
+                Lash{' '}
+                <span className="text-gold-400 font-normal">
+                  Atelier
+                </span>
               </a>
 
-              <nav className="hidden md:flex items-center gap-10 text-[11px] uppercase tracking-[0.25em] font-medium text-cream-200/70">
-                <a href="#results" className="hover:text-gold-400 transition">{t.nav.results}</a>
-                <a href="#services" className="hover:text-gold-400 transition">{t.nav.services}</a>
-                <a href="#reviews" className="hover:text-gold-400 transition">{t.nav.reviews}</a>
-                <a href="#studio" className="hover:text-gold-400 transition">{t.footer.locationTitle}</a>
+              <nav className="hidden md:flex items-center gap-10 text-[11px] uppercase tracking-[0.25em] font-medium text-cream-200/65">
+                <a
+                  href="#results"
+                  className="hover:text-gold-400 transition-colors"
+                >
+                  {t.nav.results}
+                </a>
+
+                <a
+                  href="#services"
+                  className="hover:text-gold-400 transition-colors"
+                >
+                  {t.nav.services}
+                </a>
+
+                <a
+                  href="#reviews"
+                  className="hover:text-gold-400 transition-colors"
+                >
+                  {t.nav.reviews}
+                </a>
+
+                <a
+                  href="#studio"
+                  className="hover:text-gold-400 transition-colors"
+                >
+                  {t.footer.locationTitle}
+                </a>
               </nav>
 
               <div className="flex items-center gap-4">
                 <div className="flex items-center bg-obsidian-900 border border-white/10 rounded-full p-1 text-xs font-semibold">
                   <button
                     onClick={() => setLang('es')}
-                    className={`px-3 py-1 rounded-full transition ${lang === 'es' ? 'bg-gold-500 text-obsidian-950 shadow' : 'text-cream-200/60'}`}
+                    className={`px-3 py-1 rounded-full transition ${
+                      lang === 'es'
+                        ? 'bg-gold-500 text-obsidian-950 shadow-sm'
+                        : 'text-cream-200/55'
+                    }`}
                   >
                     ES
                   </button>
+
                   <button
                     onClick={() => setLang('en')}
-                    className={`px-3 py-1 rounded-full transition ${lang === 'en' ? 'bg-gold-500 text-obsidian-950 shadow' : 'text-cream-200/60'}`}
+                    className={`px-3 py-1 rounded-full transition ${
+                      lang === 'en'
+                        ? 'bg-gold-500 text-obsidian-950 shadow-sm'
+                        : 'text-cream-200/55'
+                    }`}
                   >
                     EN
                   </button>
                 </div>
 
                 <GsapMagnetic
-                  onClick={() => { setSelectedService(''); setIsBookingOpen(true); }}
-                  className="hidden md:inline-flex px-6 py-2.5 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs uppercase tracking-widest font-bold shadow-[0_0_16px_rgba(212,175,55,0.18)]"
+                  onClick={() => {
+                    setSelectedService('');
+                    setIsBookingOpen(true);
+                  }}
+                  className="hidden md:inline-flex px-6 py-2.5 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs uppercase tracking-widest font-bold shadow-[0_0_12px_rgba(212,175,55,0.14)] transition-colors"
                 >
                   {t.nav.book}
                 </GsapMagnetic>
@@ -425,72 +595,92 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
           </header>
 
-          {/* HERO SECTION — МОНУМЕНТАЛЬНАЯ ОБЛОЖКА ПО ЗОЛОТОМУ СЕЧЕНИЮ */}
-          <section className="gsap-hero relative min-h-[calc(100svh-5rem)] flex flex-col justify-center items-center px-6 py-12 sm:py-16 z-10">
-            <div className="max-w-4xl mx-auto text-center gsap-hero-title flex flex-col items-center">
+          {/* ========================================================
+              HERO
+          ======================================================== */}
+
+          <section className="gsap-hero relative min-h-[calc(100svh-5rem)] flex flex-col justify-center items-center px-6 py-10 sm:py-16 z-10">
+            <div className="max-w-5xl mx-auto text-center gsap-hero-title flex flex-col items-center">
               
-              <div className="gsap-hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-obsidian-850 border border-gold-500/20 text-gold-400 text-[11px] font-medium mb-6 shadow-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-ping"></span>
-                {currentSpots}
+              <div className="gsap-hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-obsidian-850 border border-gold-500/20 text-gold-400 text-[10px] sm:text-[11px] font-medium mb-7 sm:mb-8">
+                <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-ping" />
+                {t.nav.spotsLeft}
               </div>
 
-              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[5.2rem] font-serif text-cream-50 leading-[1.12] tracking-tight">
-                <div className="overflow-hidden pb-4 -mb-4 px-3 -mx-3">
-                  <div className="gsap-reveal-text inline-block pb-2">
+              <h1 className="text-[clamp(3.5rem,8vw,7.5rem)] font-serif text-cream-50 leading-[0.9] tracking-[-0.025em]">
+                <div className="overflow-hidden">
+                  <div className="gsap-reveal-text inline-block">
                     {t.hero.titlePrimary}
                   </div>
                 </div>
-                <div className="overflow-hidden pb-8 -mb-8 px-6 -mx-6 mt-1">
-                  <div className="gsap-reveal-text inline-block italic font-light bg-gradient-to-r from-gold-300 via-gold-400 to-gold-600 bg-clip-text text-transparent pb-8 -mb-8 pr-6 pl-1">
+
+                <div className="overflow-hidden mt-3">
+                  <div className="gsap-reveal-text inline-block italic font-light text-gold-400">
                     {t.hero.titleSecondary}
                   </div>
                 </div>
               </h1>
 
-              <p className="gsap-hero-desc mt-6 sm:mt-8 max-w-2xl mx-auto text-base sm:text-lg text-cream-200/70 font-light leading-relaxed">
+              <p className="gsap-hero-desc mt-8 max-w-xl mx-auto text-sm sm:text-base text-cream-200/65 font-light leading-relaxed">
                 {t.hero.desc}
               </p>
 
-              <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
+              <div className="gsap-hero-cta mt-9 sm:mt-11 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto">
                 <GsapMagnetic
-                  onClick={() => { setSelectedService(''); setIsBookingOpen(true); }}
-                  className="w-full sm:w-auto px-9 py-4 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs uppercase tracking-widest font-bold transition shadow-[0_0_16px_rgba(212,175,55,0.18)] active:scale-95"
+                  onClick={() => {
+                    setSelectedService('');
+                    setIsBookingOpen(true);
+                  }}
+                  className="w-full sm:w-auto px-8 py-3.5 sm:px-9 sm:py-4 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs uppercase tracking-widest font-bold transition-colors shadow-[0_0_16px_rgba(212,175,55,0.18)] active:scale-95"
                 >
                   {t.hero.ctaBook}
                 </GsapMagnetic>
 
                 <GsapMagnetic
                   onClick={() => setIsQuizOpen(true)}
-                  className="w-full sm:w-auto px-8 py-4 rounded-full bg-obsidian-850 hover:bg-obsidian-800 text-cream-100 border border-white/10 text-xs uppercase tracking-widest font-bold transition flex items-center justify-center gap-2 active:scale-95"
+                  className="w-full sm:w-auto px-7 py-3.5 sm:px-8 sm:py-4 rounded-full bg-obsidian-850 hover:bg-obsidian-800 text-cream-100 border border-white/10 text-xs uppercase tracking-widest font-bold transition-colors flex items-center justify-center gap-2 active:scale-95"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-gold-400" />
                   {t.hero.ctaQuiz}
                 </GsapMagnetic>
               </div>
-
             </div>
           </section>
 
-          {/* ПЕРВАЯ ИЗ ДВУХ ЛАЗЕРНЫХ ЛИНИЙ */}
+          {/* ========================================================
+              DIVIDER #1
+          ======================================================== */}
+
           <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
-            <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
+            <div className="gsap-divider h-px w-full bg-gradient-to-r from-transparent via-gold-500/30 to-transparent will-change-transform" />
           </div>
 
-          {/* ЦИФРЫ ДОВЕРИЯ С ДИНАМИЧЕСКИМИ СЧЕТЧИКАМИ */}
+          {/* ========================================================
+              STATS
+          ======================================================== */}
+
           <section className="gsap-stats py-16 relative z-10">
             <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               <div className="gsap-stat-item">
                 <div className="text-3xl md:text-5xl font-serif text-gold-400 flex items-center justify-center">
                   <span className="gsap-count-years">0</span>+
                 </div>
-                <div className="text-xs text-cream-200/60 mt-2 uppercase tracking-wider">{t.proof.yearsDesc}</div>
+
+                <div className="text-xs text-cream-200/60 mt-2 uppercase tracking-wider">
+                  {t.proof.yearsDesc}
+                </div>
               </div>
 
               <div className="gsap-stat-item">
                 <div className="text-3xl md:text-5xl font-serif text-gold-400 flex items-center justify-center">
-                  4–<span className="gsap-count-weeks">0</span> {lang === 'es' ? 'Sem' : 'Wks'}
+                  4–
+                  <span className="gsap-count-weeks">0</span>{' '}
+                  {lang === 'es' ? 'Sem' : 'Wks'}
                 </div>
-                <div className="text-xs text-cream-200/60 mt-2 uppercase tracking-wider">{t.proof.retentionDesc}</div>
+
+                <div className="text-xs text-cream-200/60 mt-2 uppercase tracking-wider">
+                  {t.proof.retentionDesc}
+                </div>
               </div>
 
               <div className="gsap-stat-item">
@@ -498,22 +688,34 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
                   <ShieldCheck className="w-8 h-8 text-gold-400" />
                   <span>CE</span>
                 </div>
-                <div className="text-xs text-cream-200/60 mt-2 uppercase tracking-wider">{t.proof.safetyDesc}</div>
+
+                <div className="text-xs text-cream-200/60 mt-2 uppercase tracking-wider">
+                  {t.proof.safetyDesc}
+                </div>
               </div>
 
               <div className="gsap-stat-item">
                 <div className="text-3xl md:text-5xl font-serif text-gold-400 flex items-center justify-center">
                   <span className="gsap-count-comfort">0</span>%
                 </div>
-                <div className="text-xs text-cream-200/60 mt-2 uppercase tracking-wider">{t.proof.comfortDesc}</div>
+
+                <div className="text-xs text-cream-200/60 mt-2 uppercase tracking-wider">
+                  {t.proof.comfortDesc}
+                </div>
               </div>
             </div>
           </section>
 
-          {/* ИЗОГНУТАЯ БЕГУЩАЯ СТРОКА С ДИНАМИЧЕСКИМ РАЗГОНОМ */}
+          {/* ========================================================
+              MARQUEE
+          ======================================================== */}
+
           <CurvedMarquee lang={lang} />
 
-          {/* МАКРО-СЛАЙДЕР «ДО/ПОСЛЕ» */}
+          {/* ========================================================
+              BEFORE / AFTER
+          ======================================================== */}
+
           <BeforeAfter
             lang={lang}
             onSelectCase={(effect) => {
@@ -522,17 +724,28 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             }}
           />
 
-          {/* УСЛУГИ: ИЗЫСКАННЫЙ EDITORIAL LIST (ДАННЫЕ ИЗ CMS) */}
-          <section id="services" className="py-32 max-w-5xl mx-auto px-6 relative z-10">
+          {/* ========================================================
+              SERVICES — EDITORIAL LIST
+          ======================================================== */}
+
+          <section
+            id="services"
+            className="py-32 max-w-5xl mx-auto px-6 relative z-10"
+          >
             <div className="text-center mb-16">
               <div className="overflow-hidden py-2 -my-2">
-                <h2 className="gsap-pricing-title text-4xl md:text-5xl font-serif text-cream-100">{t.pricing.title}</h2>
+                <h2 className="gsap-pricing-title text-4xl md:text-5xl font-serif text-cream-100">
+                  {t.pricing.title}
+                </h2>
               </div>
-              <p className="mt-3 text-cream-200/60 text-sm md:text-base font-light">{t.pricing.subtitle}</p>
+
+              <p className="mt-3 text-cream-200/60 text-sm md:text-base font-light">
+                {t.pricing.subtitle}
+              </p>
             </div>
 
             <div className="gsap-services-list">
-              {currentServices.map((item: any, idx: number) => (
+              {t.pricing.items.map((item: any, idx: number) => (
                 <div
                   key={idx}
                   className="gsap-service-card group relative py-7 md:py-8 border-b border-white/10 first:border-t transition-colors duration-500 hover:border-gold-500/30"
@@ -548,6 +761,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
                           <span className="text-[9px] uppercase tracking-[0.22em] font-medium text-gold-400">
                             {item.tag}
                           </span>
+
                           <span className="text-[10px] text-cream-200/35 uppercase tracking-wider">
                             {item.time}
                           </span>
@@ -573,7 +787,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
                           setSelectedService(item.name);
                           setIsBookingOpen(true);
                         }}
-                        className="text-[10px] uppercase tracking-[0.2em] font-semibold text-gold-300 hover:text-cream-50 transition-colors shadow-none cursor-pointer"
+                        className="text-[10px] uppercase tracking-[0.2em] font-semibold text-gold-300 hover:text-cream-50 transition-colors"
                       >
                         <span className="group-hover:translate-x-1 transition-transform duration-300">
                           {t.nav.book} →
@@ -585,37 +799,59 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
               ))}
             </div>
 
-            <div className="mt-10 p-5 rounded-[16px] bg-obsidian-900/80 border border-gold-500/20 text-center text-xs text-cream-200/70">
+            <div className="mt-10 p-5 rounded-[16px] bg-obsidian-900/70 border border-gold-500/15 text-center text-xs text-cream-200/65">
               <ShieldCheck className="w-4 h-4 text-gold-400 inline mr-2 -mt-0.5" />
               {t.pricing.depositNote}
             </div>
           </section>
 
-          {/* ОТЗЫВЫ */}
+          {/* ========================================================
+              REVIEWS
+          ======================================================== */}
+
           <Reviews lang={lang} />
 
-          {/* FAQ */}
+          {/* ========================================================
+              FAQ
+          ======================================================== */}
+
           <FAQ lang={lang} />
 
-          {/* ВТОРАЯ ИЗ ДВУХ ЛАЗЕРНЫХ ЛИНИЙ */}
+          {/* ========================================================
+              DIVIDER #2
+          ======================================================== */}
+
           <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
-            <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
+            <div className="gsap-divider h-px w-full bg-gradient-to-r from-transparent via-gold-500/30 to-transparent will-change-transform" />
           </div>
 
-          {/* СТУДИЯ */}
-          <section id="studio" className="gsap-studio py-24 bg-obsidian-900/80 relative z-10">
+          {/* ========================================================
+              STUDIO
+          ======================================================== */}
+
+          <section
+            id="studio"
+            className="gsap-studio py-24 bg-obsidian-900/80 relative z-10"
+          >
             <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <div className="gsap-studio-info">
-                <div className="text-xs uppercase tracking-[0.25em] font-semibold text-gold-400 mb-2">Madrid · Barrio de Salamanca</div>
+                <div className="text-xs uppercase tracking-[0.25em] font-semibold text-gold-400 mb-2">
+                  Madrid · Barrio de Salamanca
+                </div>
+
                 <div className="overflow-hidden py-2 -my-2">
-                  <h2 className="gsap-studio-heading text-3xl md:text-5xl font-serif text-cream-100 mb-6">{t.footer.locationTitle}</h2>
+                  <h2 className="gsap-studio-heading text-3xl md:text-5xl font-serif text-cream-100 mb-6">
+                    {t.footer.locationTitle}
+                  </h2>
                 </div>
 
                 <div className="space-y-4 text-sm text-cream-200/70 mb-8 font-light">
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-gold-400 shrink-0 mt-0.5" />
+
                     <div>
                       <span>{t.footer.address}</span>
+
                       <div>
                         <a
                           href="https://maps.google.com/?q=Calle+de+Velazquez+48+28001+Madrid"
@@ -623,7 +859,12 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 text-xs text-gold-400 hover:text-gold-300 underline underline-offset-4 font-semibold tracking-wider uppercase transition mt-2"
                         >
-                          <span>{lang === 'es' ? 'Abrir en Google Maps' : 'Open in Google Maps'}</span>
+                          <span>
+                            {lang === 'es'
+                              ? 'Abrir en Google Maps'
+                              : 'Open in Google Maps'}
+                          </span>
+
                           <ArrowUpRight className="w-3.5 h-3.5" />
                         </a>
                       </div>
@@ -636,17 +877,15 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
                   </div>
                 </div>
 
-                <GsapMagnetic>
-                  <a
-                    href="https://wa.me/34614678720"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs uppercase tracking-widest font-bold transition shadow-none"
-                  >
-                    <MessageCircle className="w-4 h-4" />
-                    WhatsApp Studio Directo
-                  </a>
-                </GsapMagnetic>
+                <a
+                  href="https://wa.me/34614678720"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="studio-whatsapp-link inline-flex items-center gap-2 px-8 py-4 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs uppercase tracking-widest font-bold transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  WhatsApp Studio Directo
+                </a>
               </div>
 
               <div className="rounded-[20px] overflow-hidden border border-white/10 aspect-square relative">
@@ -659,86 +898,89 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
           </section>
 
-          {/* ФУТЕР С КНОПКОЙ CMS */}
+          {/* ========================================================
+              FOOTER
+          ======================================================== */}
+
           <footer className="pt-16 pb-36 md:pb-24 bg-obsidian-950 text-center text-xs text-cream-200/50 relative z-10 overflow-visible">
             <div className="max-w-4xl mx-auto px-6">
               <div className="font-serif text-2xl tracking-widest text-cream-100 mb-4 uppercase leading-relaxed">
                 Lash Atelier Madrid
               </div>
+
               <div className="mb-4 flex flex-wrap items-center justify-center gap-4 text-cream-200/70">
                 <button
                   onClick={() => setIsPrivacyOpen(true)}
-                  className="hover:text-gold-400 underline underline-offset-4 transition cursor-pointer"
+                  className="hover:text-gold-400 underline underline-offset-4 transition-colors"
                 >
-                  {lang === 'es' ? 'Política de Privacidad (RGPD / LOPD)' : 'Privacy Policy (GDPR)'}
+                  {lang === 'es'
+                    ? 'Política de Privacidad (RGPD / LOPD)'
+                    : 'Privacy Policy (GDPR)'}
                 </button>
+
                 <span>·</span>
+
                 <span className="text-cream-200/40">
-                  {lang === 'es' ? 'Aviso Legal (LSSI-CE)' : 'Legal Notice'}
+                  {lang === 'es'
+                    ? 'Aviso Legal (LSSI-CE)'
+                    : 'Legal Notice'}
                 </span>
+
                 <span>·</span>
+
                 <span className="text-cream-200/40">
-                  {lang === 'es' ? 'Hojas de reclamaciones disponibles' : 'Consumer complaint sheets available'}
+                  {lang === 'es'
+                    ? 'Hojas de reclamaciones disponibles'
+                    : 'Consumer complaint sheets available'}
                 </span>
-                <span>·</span>
-                {/* ДИСКРЕТНАЯ КНОПКА ВХОДА В АДМИНКУ */}
-                <button
-                  onClick={() => setIsLoginOpen(true)}
-                  title="Panel de Control (Cmd+Shift+A)"
-                  className="hover:text-gold-400 text-cream-200/30 transition cursor-pointer text-[11px]"
-                >
-                  ⚙ CMS
-                </button>
               </div>
+
               <p>{t.footer.copy}</p>
             </div>
           </footer>
         </div>
       </GsapSmoothScroll>
-      
-      {/* МОДАЛКИ КЛИЕНТСКИЕ */}
-      <LashQuiz lang={lang} isOpen={isQuizOpen} onClose={() => setIsQuizOpen(false)} />
+
+      {/* ============================================================
+          OVERLAYS
+      ============================================================ */}
+
+      <FilmGrain />
+
+      <LashQuiz
+        lang={lang}
+        isOpen={isQuizOpen}
+        onClose={() => setIsQuizOpen(false)}
+      />
+
       <BookingModal
         lang={lang}
         isOpen={isBookingOpen}
         preselectedService={selectedService}
         onClose={() => setIsBookingOpen(false)}
       />
+
       <PrivacyPolicyModal
         lang={lang}
         isOpen={isPrivacyOpen}
         onClose={() => setIsPrivacyOpen(false)}
       />
-      <CookieBanner lang={lang} isLoading={isLoading} />
-      <StickyMobileBar lang={lang} onOpenBooking={() => { setSelectedService(''); setIsBookingOpen(true); }} />
 
-      {/* КНОПКА ВОЗВРАТА НАВЕРХ */}
-      <ScrollToTop />
+      <CookieBanner
+        lang={lang}
+        isLoading={isLoading}
+      />
 
-      {/* МОДАЛКИ АДМИНИСТРАТОРА (CMS) */}
-      <AdminLogin
-        isOpen={isLoginOpen}
-        onClose={() => setIsLoginOpen(false)}
-        onSuccess={() => {
-          setIsLoginOpen(false);
-          setIsAdminOpen(true);
+      <StickyMobileBar
+        lang={lang}
+        onOpenBooking={() => {
+          setSelectedService('');
+          setIsBookingOpen(true);
         }}
       />
-      <AdminModal
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
-      />
-    </>
-  );
-}
 
-// Обертка App в ContentProvider
-export function App() {
-  const [lang, setLang] = useState<Lang>('es');
-  return (
-    <ContentProvider lang={lang}>
-      <AppContent lang={lang} setLang={setLang} />
-    </ContentProvider>
+      <ScrollToTop />
+    </>
   );
 }
 

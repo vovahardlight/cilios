@@ -20,46 +20,22 @@ import { FilmGrain } from './components/FilmGrain';
 import { Reviews } from './components/Reviews';
 import { FAQ } from './components/FAQ';
 
-// CMS & SEO МОДУЛИ
-import { ContentProvider, useContent } from './context/ContentContext';
-import { AdminModal } from './components/admin/AdminModal';
-import { AdminLogin } from './components/admin/AdminLogin';
-
 import { Sparkles, MapPin, Clock, ShieldCheck, MessageCircle, ArrowUpRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
-  const { data } = useContent(); // Динамические данные из CMS в реальном времени
+export function App() {
+  const [lang, setLang] = useState<Lang>('es');
   const [isLoading, setIsLoading] = useState(true);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string>('');
 
   const t = content[lang];
   const mainRef = useRef<HTMLDivElement>(null);
-
-  // Список услуг (из CMS или запасной из translations)
-  const currentServices = data?.services?.[lang] || t.pricing.items;
-  // Динамический статус свободных мест из CMS
-  const currentSpots = data?.spotsLeft?.[lang] || t.nav.spotsLeft;
-
-  // ГОРЯЧИЕ КЛАВИШИ ДЛЯ ВХОДА В CMS: Cmd+Shift+A (Mac) или Ctrl+Shift+A (Win)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
-        e.preventDefault();
-        setIsLoginOpen(true);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   useEffect(() => {
     if (isLoading) return;
@@ -367,17 +343,10 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
   return (
     <>
       <GsapCursor />
-
-      {/* Золотая нить прогресса скролла */}
       <ScrollProgress />
-
-      {/* Бархатное пленочное зерно */}
       <FilmGrain />
-
-      {/* Прелоадер */}
       {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
 
-      {/* ГЛАВНЫЙ GSAP SMOOTH SCROLL ДЛЯ ВСЕГО КОНТЕНТА */}
       <GsapSmoothScroll>
         <div
           ref={mainRef}
@@ -425,13 +394,13 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
           </header>
 
-          {/* HERO SECTION — МОНУМЕНТАЛЬНАЯ ОБЛОЖКА ПО ЗОЛОТОМУ СЕЧЕНИЮ */}
+          {/* HERO SECTION — МОНУМЕНТАЛЬНАЯ ОБЛОЖКА VOGUE ПО ЗОЛОТОМУ СЕЧЕНИЮ */}
           <section className="gsap-hero relative min-h-[calc(100svh-5rem)] flex flex-col justify-center items-center px-6 py-12 sm:py-16 z-10">
             <div className="max-w-4xl mx-auto text-center gsap-hero-title flex flex-col items-center">
               
               <div className="gsap-hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-obsidian-850 border border-gold-500/20 text-gold-400 text-[11px] font-medium mb-6 shadow-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-ping"></span>
-                {currentSpots}
+                {t.nav.spotsLeft}
               </div>
 
               <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[5.2rem] font-serif text-cream-50 leading-[1.12] tracking-tight">
@@ -471,7 +440,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
           </section>
 
-          {/* ПЕРВАЯ ИЗ ДВУХ ЛАЗЕРНЫХ ЛИНИЙ */}
+          {/* ПЕРВАЯ ИЗ ДВУХ ЛАЗЕРНЫХ ЛИНИЙ (ПОСЛЕ HERO) */}
           <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
             <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
           </div>
@@ -513,7 +482,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
           {/* ИЗОГНУТАЯ БЕГУЩАЯ СТРОКА С ДИНАМИЧЕСКИМ РАЗГОНОМ */}
           <CurvedMarquee lang={lang} />
 
-          {/* МАКРО-СЛАЙДЕР «ДО/ПОСЛЕ» */}
+          {/* МАКРО-СЛАЙДЕР «ДО/ПОСЛЕ» (ТЕПЕРЬ ЭТО ГЛАВНЫЙ ВИЗУАЛЬНЫЙ ЦЕНТР САЙТА) */}
           <BeforeAfter
             lang={lang}
             onSelectCase={(effect) => {
@@ -522,7 +491,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             }}
           />
 
-          {/* УСЛУГИ: ИЗЫСКАННЫЙ EDITORIAL LIST (ДАННЫЕ ИЗ CMS) */}
+          {/* УСЛУГИ: ИЗЫСКАННЫЙ EDITORIAL LIST */}
           <section id="services" className="py-32 max-w-5xl mx-auto px-6 relative z-10">
             <div className="text-center mb-16">
               <div className="overflow-hidden py-2 -my-2">
@@ -532,7 +501,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
 
             <div className="gsap-services-list">
-              {currentServices.map((item: any, idx: number) => (
+              {t.pricing.items.map((item: any, idx: number) => (
                 <div
                   key={idx}
                   className="gsap-service-card group relative py-7 md:py-8 border-b border-white/10 first:border-t transition-colors duration-500 hover:border-gold-500/30"
@@ -597,7 +566,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
           {/* FAQ */}
           <FAQ lang={lang} />
 
-          {/* ВТОРАЯ ИЗ ДВУХ ЛАЗЕРНЫХ ЛИНИЙ */}
+          {/* ВТОРАЯ ИЗ ДВУХ ЛАЗЕРНЫХ ЛИНИЙ (ПЕРЕД СТУДИЕЙ) */}
           <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
             <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
           </div>
@@ -659,7 +628,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
           </section>
 
-          {/* ФУТЕР С КНОПКОЙ CMS */}
+          {/* ФУТЕР */}
           <footer className="pt-16 pb-36 md:pb-24 bg-obsidian-950 text-center text-xs text-cream-200/50 relative z-10 overflow-visible">
             <div className="max-w-4xl mx-auto px-6">
               <div className="font-serif text-2xl tracking-widest text-cream-100 mb-4 uppercase leading-relaxed">
@@ -680,15 +649,6 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
                 <span className="text-cream-200/40">
                   {lang === 'es' ? 'Hojas de reclamaciones disponibles' : 'Consumer complaint sheets available'}
                 </span>
-                <span>·</span>
-                {/* ДИСКРЕТНАЯ КНОПКА ВХОДА В АДМИНКУ */}
-                <button
-                  onClick={() => setIsLoginOpen(true)}
-                  title="Panel de Control (Cmd+Shift+A)"
-                  className="hover:text-gold-400 text-cream-200/30 transition cursor-pointer text-[11px]"
-                >
-                  ⚙ CMS
-                </button>
               </div>
               <p>{t.footer.copy}</p>
             </div>
@@ -696,7 +656,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         </div>
       </GsapSmoothScroll>
       
-      {/* МОДАЛКИ КЛИЕНТСКИЕ */}
+      {/* МОДАЛКИ */}
       <LashQuiz lang={lang} isOpen={isQuizOpen} onClose={() => setIsQuizOpen(false)} />
       <BookingModal
         lang={lang}
@@ -714,31 +674,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
 
       {/* КНОПКА ВОЗВРАТА НАВЕРХ */}
       <ScrollToTop />
-
-      {/* МОДАЛКИ АДМИНИСТРАТОРА (CMS) */}
-      <AdminLogin
-        isOpen={isLoginOpen}
-        onClose={() => setIsLoginOpen(false)}
-        onSuccess={() => {
-          setIsLoginOpen(false);
-          setIsAdminOpen(true);
-        }}
-      />
-      <AdminModal
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
-      />
     </>
-  );
-}
-
-// Обертка App в ContentProvider
-export function App() {
-  const [lang, setLang] = useState<Lang>('es');
-  return (
-    <ContentProvider lang={lang}>
-      <AppContent lang={lang} setLang={setLang} />
-    </ContentProvider>
   );
 }
 

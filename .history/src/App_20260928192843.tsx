@@ -20,47 +20,24 @@ import { FilmGrain } from './components/FilmGrain';
 import { Reviews } from './components/Reviews';
 import { FAQ } from './components/FAQ';
 
-// CMS & SEO МОДУЛИ
-import { ContentProvider, useContent } from './context/ContentContext';
-import { AdminModal } from './components/admin/AdminModal';
-import { AdminLogin } from './components/admin/AdminLogin';
-
 import { Sparkles, MapPin, Clock, ShieldCheck, MessageCircle, ArrowUpRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
-  const { data } = useContent(); // Динамические данные из CMS в реальном времени
+export function App() {
+  const [lang, setLang] = useState<Lang>('es');
   const [isLoading, setIsLoading] = useState(true);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string>('');
 
   const t = content[lang];
   const mainRef = useRef<HTMLDivElement>(null);
 
-  // Список услуг (из CMS или запасной из translations)
-  const currentServices = data?.services?.[lang] || t.pricing.items;
-  // Динамический статус свободных мест из CMS
-  const currentSpots = data?.spotsLeft?.[lang] || t.nav.spotsLeft;
-
-  // ГОРЯЧИЕ КЛАВИШИ ДЛЯ ВХОДА В CMS: Cmd+Shift+A (Mac) или Ctrl+Shift+A (Win)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
-        e.preventDefault();
-        setIsLoginOpen(true);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
+  // СБОРКА ВСЕХ СЦЕН GSAP
   useEffect(() => {
     if (isLoading) return;
 
@@ -69,7 +46,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
     }, 150);
 
     const ctx = gsap.context(() => {
-      // 1. ПЛАВНЫЙ ВХОД ПЕРВОГО ЭКРАНА
+      // 1. ПЛАВНЫЙ ВХОД ПЕРВОГО ЭКРАНА (ТВОЙ РОДНОЙ, НЕ ТРОНУТ)
       const heroTl = gsap.timeline();
 
       heroTl
@@ -104,7 +81,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
           '-=0.7'
         );
 
-      // ПАРАЛЛАКС ЗАГОЛОВКА HERO ПРИ СКРОЛЛЕ
+      // 2. МЯГКИЙ ПАРАЛЛАКС HERO С ГЛУБОКОЙ ИНЕРЦИЕЙ (scrub: 1.8)
       gsap.to('.gsap-hero-title', {
         y: -60,
         opacity: 0.25,
@@ -116,7 +93,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         },
       });
 
-      // 2. ДВЕ РАСКРЫВАЮЩИЕСЯ ЛАЗЕРНЫЕ ЛИНИИ
+      // 3. РАСКРЫВАЮЩИЕСЯ ЛАЗЕРНЫЕ ЛИНИИ (scaleX: 0 -> 1 ИЗ ЦЕНТРА)
       gsap.utils.toArray<HTMLElement>('.gsap-divider').forEach((divider) => {
         gsap.fromTo(
           divider,
@@ -135,7 +112,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         );
       });
 
-      // 3. ЦИФРЫ ДОВЕРИЯ (TOP 65%)
+      // 4. ЦИФРЫ ДОВЕРИЯ: ПОДЪЕМ БЛОКОВ + ДИНАМИЧЕСКИЙ НАБОР ЧИСЕЛ
       gsap.fromTo(
         '.gsap-stat-item',
         { y: 40, opacity: 0 },
@@ -153,7 +130,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         }
       );
 
-      // СЧЕТЧИКИ
+      // Набегание: 0 -> 6 лет
       const yearsObj = { val: 0 };
       gsap.to(yearsObj, {
         val: 6,
@@ -166,6 +143,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         },
       });
 
+      // Набегание: 0 -> 6 недель
       const weeksObj = { val: 0 };
       gsap.to(weeksObj, {
         val: 6,
@@ -178,6 +156,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         },
       });
 
+      // Набегание: 0 -> 100%
       const comfortObj = { val: 0 };
       gsap.to(comfortObj, {
         val: 100,
@@ -190,7 +169,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         },
       });
 
-      // 4. СЛАЙДЕР ДО/ПОСЛЕ (TOP 60%)
+      // 5. СЛАЙДЕР «ДО/ПОСЛЕ» (ПОЯВЛЕНИЕ НА СЕРЕДИНЕ ЭКРАНА: TOP 60%)
       gsap.fromTo(
         '#results',
         { opacity: 0, y: 40 },
@@ -207,7 +186,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         }
       );
 
-      // 5. СЕКЦИЯ ЦЕН: ЗАГОЛОВОК
+      // 6. СЕКЦИЯ ЦЕН: ПЕРСОНАЛЬНОЕ ПОЯВЛЕНИЕ ЗАГОЛОВКА (TOP 65%)
       gsap.fromTo(
         '.gsap-pricing-title',
         { yPercent: 120, y: 0, opacity: 0 },
@@ -225,12 +204,12 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         }
       );
 
-      // КАРТОЧКИ УСЛУГ (EDITORIAL LIST)
+      // 7. ПЕРСОНАЛЬНЫЙ СКРОЛЛ-ТРИГГЕР ДЛЯ КАЖДОЙ УСЛУГИ (КАЖДАЯ ПОЯВЛЯЕТСЯ САМА ПО СЕБЕ)
       const serviceCards = gsap.utils.toArray<HTMLElement>('.gsap-service-card');
       serviceCards.forEach((card) => {
         gsap.fromTo(
           card,
-          { y: 35, opacity: 0 },
+          { y: 40, opacity: 0 },
           {
             y: 0,
             opacity: 1,
@@ -245,7 +224,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         );
       });
 
-      // 6. ОТЗЫВЫ
+      // 8. КАСКАД ТЕКСТА И КАРТОЧЕК В БЛОКЕ ОТЗЫВОВ
       const reviewsTl = gsap.timeline({
         scrollTrigger: {
           trigger: '#reviews',
@@ -267,7 +246,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
           }
         )
         .fromTo(
-          '#reviews .gsap-review-card',
+          '#reviews .rounded-3xl',
           { y: 50, opacity: 0 },
           {
             y: 0,
@@ -279,8 +258,8 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
           '-=0.4'
         );
 
-      // 7. FAQ АККОРДЕОН
-      const faqItems = gsap.utils.toArray<HTMLElement>('#faq .gsap-faq-item');
+      // 9. КАСКАД FAQ АККОРДЕОНА (КАЖДЫЙ ВОПРОС САМ ПО СЕБЕ)
+      const faqItems = gsap.utils.toArray<HTMLElement>('#faq .rounded-2xl');
       faqItems.forEach((item) => {
         gsap.fromTo(
           item,
@@ -299,7 +278,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         );
       });
 
-      // 8. СТУДИЯ: МЕДЛЕННЫЙ ТАЙМЛАЙН
+      // 10. СТУДИЯ: МЕДЛЕННОЕ БЛАГОРОДНОЕ ПОЯВЛЕНИЕ (SLOW LUXURY TIMELINE)
       const studioTl = gsap.timeline({
         scrollTrigger: {
           trigger: '.gsap-studio',
@@ -312,34 +291,67 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         .fromTo(
           '.gsap-studio-info > div:first-child',
           { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 1.0, ease: 'power3.out', force3D: true }
+          { 
+            opacity: 1, 
+            y: 0, 
+            duration: 1.0, 
+            ease: 'power3.out',
+            force3D: true,
+          }
         )
         .fromTo(
           '.gsap-studio-heading',
           { yPercent: 110, opacity: 0 },
-          { yPercent: 0, opacity: 1, duration: 1.4, ease: 'power3.out', force3D: true },
+          { 
+            yPercent: 0, 
+            opacity: 1, 
+            duration: 1.4, 
+            ease: 'power3.out',
+            force3D: true,
+          },
           '-=0.6'
         )
         .fromTo(
           '.gsap-studio-info .space-y-4 > div',
           { opacity: 0, x: -25 },
-          { opacity: 1, x: 0, stagger: 0.25, duration: 1.1, ease: 'power3.out', force3D: true },
+          { 
+            opacity: 1, 
+            x: 0, 
+            stagger: 0.25, 
+            duration: 1.1, 
+            ease: 'power3.out',
+            force3D: true,
+          },
           '-=0.7'
         )
         .fromTo(
           '.gsap-studio-info a[href*="wa.me"]',
           { opacity: 0, y: 20, scale: 0.94 },
-          { opacity: 1, y: 0, scale: 1, duration: 1.0, ease: 'power3.out', force3D: true },
+          { 
+            opacity: 1, 
+            y: 0, 
+            scale: 1, 
+            duration: 1.0, 
+            ease: 'power3.out',
+            force3D: true,
+          },
           '-=0.4'
         )
         .fromTo(
           '.gsap-studio .aspect-square',
           { opacity: 0, scale: 0.90, y: 40 },
-          { opacity: 1, scale: 1, y: 0, duration: 1.6, ease: 'power3.out', force3D: true },
+          { 
+            opacity: 1, 
+            scale: 1, 
+            y: 0, 
+            duration: 1.6, 
+            ease: 'power3.out',
+            force3D: true,
+          },
           0
         );
 
-      // ПАРАЛЛАКС ФОТО ВНУТРИ СТУДИИ
+      // БАРХАТНЫЙ ПАРАЛЛАКС ФОТО ВНУТРИ РАМКИ ПРИ СКРОЛЛЕ
       gsap.fromTo(
         '.gsap-studio-img',
         { scale: 1.2, yPercent: -12 },
@@ -370,9 +382,6 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
 
       {/* Золотая нить прогресса скролла */}
       <ScrollProgress />
-
-      {/* Бархатное пленочное зерно */}
-      <FilmGrain />
 
       {/* Прелоадер */}
       {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
@@ -417,7 +426,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
 
                 <GsapMagnetic
                   onClick={() => { setSelectedService(''); setIsBookingOpen(true); }}
-                  className="hidden md:inline-flex px-6 py-2.5 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs uppercase tracking-widest font-bold shadow-[0_0_16px_rgba(212,175,55,0.18)]"
+                  className="hidden md:inline-flex px-6 py-2.5 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs uppercase tracking-widest font-bold shadow-[0_0_20px_rgba(212,175,55,0.25)]"
                 >
                   {t.nav.book}
                 </GsapMagnetic>
@@ -425,16 +434,16 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
           </header>
 
-          {/* HERO SECTION — МОНУМЕНТАЛЬНАЯ ОБЛОЖКА ПО ЗОЛОТОМУ СЕЧЕНИЮ */}
-          <section className="gsap-hero relative min-h-[calc(100svh-5rem)] flex flex-col justify-center items-center px-6 py-12 sm:py-16 z-10">
+          {/* HERO SECTION */}
+          <section className="gsap-hero relative min-h-[calc(100svh-5rem)] flex flex-col justify-center items-center px-6 py-6 sm:py-10 z-10">
             <div className="max-w-4xl mx-auto text-center gsap-hero-title flex flex-col items-center">
               
-              <div className="gsap-hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-obsidian-850 border border-gold-500/20 text-gold-400 text-[11px] font-medium mb-6 shadow-sm">
+              <div className="gsap-hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-obsidian-850 border border-gold-500/20 text-gold-400 text-[11px] font-medium mb-5 sm:mb-6 shadow-sm">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-ping"></span>
-                {currentSpots}
+                {t.nav.spotsLeft}
               </div>
 
-              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[5.2rem] font-serif text-cream-50 leading-[1.12] tracking-tight">
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif text-cream-50 leading-[1.2] tracking-tight">
                 <div className="overflow-hidden pb-4 -mb-4 px-3 -mx-3">
                   <div className="gsap-reveal-text inline-block pb-2">
                     {t.hero.titlePrimary}
@@ -447,21 +456,21 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
                 </div>
               </h1>
 
-              <p className="gsap-hero-desc mt-6 sm:mt-8 max-w-2xl mx-auto text-base sm:text-lg text-cream-200/70 font-light leading-relaxed">
+              <p className="gsap-hero-desc mt-5 sm:mt-6 max-w-xl mx-auto text-sm sm:text-base text-cream-200/70 font-light leading-relaxed">
                 {t.hero.desc}
               </p>
 
-              <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
+              <div className="gsap-hero-cta mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto">
                 <GsapMagnetic
                   onClick={() => { setSelectedService(''); setIsBookingOpen(true); }}
-                  className="w-full sm:w-auto px-9 py-4 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs uppercase tracking-widest font-bold transition shadow-[0_0_16px_rgba(212,175,55,0.18)] active:scale-95"
+                  className="w-full sm:w-auto px-8 py-3.5 sm:px-9 sm:py-4 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs uppercase tracking-widest font-bold transition shadow-[0_0_30px_rgba(212,175,55,0.35)] active:scale-95"
                 >
                   {t.hero.ctaBook}
                 </GsapMagnetic>
 
                 <GsapMagnetic
                   onClick={() => setIsQuizOpen(true)}
-                  className="w-full sm:w-auto px-8 py-4 rounded-full bg-obsidian-850 hover:bg-obsidian-800 text-cream-100 border border-white/10 text-xs uppercase tracking-widest font-bold transition flex items-center justify-center gap-2 active:scale-95"
+                  className="w-full sm:w-auto px-7 py-3.5 sm:px-8 sm:py-4 rounded-full bg-obsidian-850 hover:bg-obsidian-800 text-cream-100 border border-white/10 text-xs uppercase tracking-widest font-bold transition flex items-center justify-center gap-2 active:scale-95"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-gold-400" />
                   {t.hero.ctaQuiz}
@@ -471,7 +480,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
           </section>
 
-          {/* ПЕРВАЯ ИЗ ДВУХ ЛАЗЕРНЫХ ЛИНИЙ */}
+          {/* 1. РАСКРЫВАЮЩАЯСЯ ЛАЗЕРНАЯ ЛИНИЯ ПЕРЕД ЦИФРАМИ */}
           <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
             <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
           </div>
@@ -510,8 +519,18 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
           </section>
 
-          {/* ИЗОГНУТАЯ БЕГУЩАЯ СТРОКА С ДИНАМИЧЕСКИМ РАЗГОНОМ */}
+          {/* 2. РАСКРЫВАЮЩАЯСЯ ЛАЗЕРНАЯ ЛИНИЯ ПЕРЕД РЕЛЬСАМИ */}
+          <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
+            <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
+          </div>
+
+          {/* ИЗОГНУТАЯ БЕГУЩАЯ СТРОКА НА РЕЛЬСАХ */}
           <CurvedMarquee lang={lang} />
+
+          {/* 3. РАСКРЫВАЮЩАЯСЯ ЛАЗЕРНАЯ ЛИНИЯ ПЕРЕД СЛАЙДЕРОМ */}
+          <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
+            <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
+          </div>
 
           {/* МАКРО-СЛАЙДЕР «ДО/ПОСЛЕ» */}
           <BeforeAfter
@@ -522,8 +541,13 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             }}
           />
 
-          {/* УСЛУГИ: ИЗЫСКАННЫЙ EDITORIAL LIST (ДАННЫЕ ИЗ CMS) */}
-          <section id="services" className="py-32 max-w-5xl mx-auto px-6 relative z-10">
+          {/* 4. РАСКРЫВАЮЩАЯСЯ ЛАЗЕРНАЯ ЛИНИЯ ПЕРЕД УСЛУГАМИ */}
+          <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
+            <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
+          </div>
+
+          {/* УСЛУГИ И ЦЕНЫ */}
+          <section id="services" className="py-28 max-w-4xl mx-auto px-6 relative z-10">
             <div className="text-center mb-16">
               <div className="overflow-hidden py-2 -my-2">
                 <h2 className="gsap-pricing-title text-4xl md:text-5xl font-serif text-cream-100">{t.pricing.title}</h2>
@@ -531,73 +555,63 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
               <p className="mt-3 text-cream-200/60 text-sm md:text-base font-light">{t.pricing.subtitle}</p>
             </div>
 
-            <div className="gsap-services-list">
-              {currentServices.map((item: any, idx: number) => (
-                <div
-                  key={idx}
-                  className="gsap-service-card group relative py-7 md:py-8 border-b border-white/10 first:border-t transition-colors duration-500 hover:border-gold-500/30"
-                >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="flex gap-5 md:gap-7 min-w-0">
-                      <div className="pt-1 text-[10px] tracking-[0.18em] text-cream-200/30 font-medium shrink-0">
-                        {String(idx + 1).padStart(2, '0')}
-                      </div>
-
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-3 mb-2">
-                          <span className="text-[9px] uppercase tracking-[0.22em] font-medium text-gold-400">
-                            {item.tag}
-                          </span>
-                          <span className="text-[10px] text-cream-200/35 uppercase tracking-wider">
-                            {item.time}
-                          </span>
-                        </div>
-
-                        <h3 className="text-2xl md:text-3xl font-sans font-medium tracking-tight text-cream-100 group-hover:text-white transition-colors">
-                          {item.name}
-                        </h3>
-
-                        <p className="text-xs md:text-sm text-cream-200/55 mt-2 max-w-2xl leading-relaxed font-light">
-                          {item.desc}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between md:justify-end gap-7 shrink-0 pl-10 md:pl-0">
-                      <span className="text-3xl md:text-4xl font-serif font-light text-gold-400 whitespace-nowrap">
-                        {item.price}
-                      </span>
-
-                      <GsapMagnetic
-                        onClick={() => {
-                          setSelectedService(item.name);
-                          setIsBookingOpen(true);
-                        }}
-                        className="text-[10px] uppercase tracking-[0.2em] font-semibold text-gold-300 hover:text-cream-50 transition-colors shadow-none cursor-pointer"
-                      >
-                        <span className="group-hover:translate-x-1 transition-transform duration-300">
-                          {t.nav.book} →
-                        </span>
-                      </GsapMagnetic>
-                    </div>
+            <div className="gsap-services-list space-y-4">
+            {t.pricing.items.map((item: any, idx: number) => (
+              <div
+                key={idx}
+                className="gsap-service-card p-8 rounded-2xl bg-obsidian-900 border border-white/5 hover:border-gold-500/40 hover:-translate-y-1 transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-6"
+              >
+                <div>
+                  {/* МИКРО-ТЕГИ HAUTE COUTURE И ВРЕМЯ */}
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-gold-400 bg-gold-500/10 border border-gold-500/20 px-2.5 py-0.5 rounded-full">
+                      {item.tag}
+                    </span>
+                    <span className="text-[10px] text-cream-200/50 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">
+                      {item.time}
+                    </span>
                   </div>
-                </div>
-              ))}
-            </div>
 
-            <div className="mt-10 p-5 rounded-[16px] bg-obsidian-900/80 border border-gold-500/20 text-center text-xs text-cream-200/70">
+                  <h3 className="font-serif text-2xl font-normal text-cream-100">{item.name}</h3>
+                  <p className="text-xs text-cream-200/60 mt-2 max-w-xl leading-relaxed">{item.desc}</p>
+                </div>
+
+                <div className="flex items-center justify-between md:justify-end gap-6 pt-4 md:pt-0 border-t md:border-t-0 border-white/5">
+                  <span className="text-3xl font-serif text-gold-400">{item.price}</span>
+                  <GsapMagnetic
+                    onClick={() => { setSelectedService(item.name); setIsBookingOpen(true); }}
+                    className="px-6 py-3 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs font-bold uppercase tracking-wider transition shadow"
+                  >
+                    {t.nav.book}
+                  </GsapMagnetic>
+                </div>
+              </div>
+            ))}
+          </div>
+
+            <div className="mt-10 p-5 rounded-2xl bg-obsidian-900/80 border border-gold-500/20 text-center text-xs text-cream-200/70">
               <ShieldCheck className="w-4 h-4 text-gold-400 inline mr-2 -mt-0.5" />
               {t.pricing.depositNote}
             </div>
           </section>
 
+          {/* 5. РАСКРЫВАЮЩАЯСЯ ЛАЗЕРНАЯ ЛИНИЯ ПЕРЕД ОТЗЫВАМИ */}
+          <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
+            <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
+          </div>
+
           {/* ОТЗЫВЫ */}
           <Reviews lang={lang} />
+
+          {/* 6. РАСКРЫВАЮЩАЯСЯ ЛАЗЕРНАЯ ЛИНИЯ ПЕРЕД FAQ */}
+          <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
+            <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
+          </div>
 
           {/* FAQ */}
           <FAQ lang={lang} />
 
-          {/* ВТОРАЯ ИЗ ДВУХ ЛАЗЕРНЫХ ЛИНИЙ */}
+          {/* 7. РАСКРЫВАЮЩАЯСЯ ЛАЗЕРНАЯ ЛИНИЯ ПЕРЕД СТУДИЕЙ */}
           <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
             <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
           </div>
@@ -641,7 +655,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
                     href="https://wa.me/34614678720"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs uppercase tracking-widest font-bold transition shadow-none"
+                    className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs uppercase tracking-widest font-bold transition shadow-lg"
                   >
                     <MessageCircle className="w-4 h-4" />
                     WhatsApp Studio Directo
@@ -649,7 +663,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
                 </GsapMagnetic>
               </div>
 
-              <div className="rounded-[20px] overflow-hidden border border-white/10 aspect-square relative">
+              <div className="rounded-3xl overflow-hidden border border-white/10 aspect-square shadow-2xl relative">
                 <img
                   src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1000&q=80"
                   alt="Studio interior"
@@ -659,7 +673,12 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
           </section>
 
-          {/* ФУТЕР С КНОПКОЙ CMS */}
+          {/* 8. РАСКРЫВАЮЩАЯСЯ ЛАЗЕРНАЯ ЛИНИЯ ПЕРЕД ФУТЕРОМ */}
+          <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
+            <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
+          </div>
+
+          {/* ФУТЕР */}
           <footer className="pt-16 pb-36 md:pb-24 bg-obsidian-950 text-center text-xs text-cream-200/50 relative z-10 overflow-visible">
             <div className="max-w-4xl mx-auto px-6">
               <div className="font-serif text-2xl tracking-widest text-cream-100 mb-4 uppercase leading-relaxed">
@@ -668,7 +687,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
               <div className="mb-4 flex flex-wrap items-center justify-center gap-4 text-cream-200/70">
                 <button
                   onClick={() => setIsPrivacyOpen(true)}
-                  className="hover:text-gold-400 underline underline-offset-4 transition cursor-pointer"
+                  className="hover:text-gold-400 underline underline-offset-4 transition"
                 >
                   {lang === 'es' ? 'Política de Privacidad (RGPD / LOPD)' : 'Privacy Policy (GDPR)'}
                 </button>
@@ -680,23 +699,17 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
                 <span className="text-cream-200/40">
                   {lang === 'es' ? 'Hojas de reclamaciones disponibles' : 'Consumer complaint sheets available'}
                 </span>
-                <span>·</span>
-                {/* ДИСКРЕТНАЯ КНОПКА ВХОДА В АДМИНКУ */}
-                <button
-                  onClick={() => setIsLoginOpen(true)}
-                  title="Panel de Control (Cmd+Shift+A)"
-                  className="hover:text-gold-400 text-cream-200/30 transition cursor-pointer text-[11px]"
-                >
-                  ⚙ CMS
-                </button>
               </div>
               <p>{t.footer.copy}</p>
             </div>
           </footer>
         </div>
       </GsapSmoothScroll>
+
+       {/* Бархатное пленочное зерно */}
+       <FilmGrain />
       
-      {/* МОДАЛКИ КЛИЕНТСКИЕ */}
+      {/* МОДАЛКИ */}
       <LashQuiz lang={lang} isOpen={isQuizOpen} onClose={() => setIsQuizOpen(false)} />
       <BookingModal
         lang={lang}
@@ -714,31 +727,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
 
       {/* КНОПКА ВОЗВРАТА НАВЕРХ */}
       <ScrollToTop />
-
-      {/* МОДАЛКИ АДМИНИСТРАТОРА (CMS) */}
-      <AdminLogin
-        isOpen={isLoginOpen}
-        onClose={() => setIsLoginOpen(false)}
-        onSuccess={() => {
-          setIsLoginOpen(false);
-          setIsAdminOpen(true);
-        }}
-      />
-      <AdminModal
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
-      />
     </>
-  );
-}
-
-// Обертка App в ContentProvider
-export function App() {
-  const [lang, setLang] = useState<Lang>('es');
-  return (
-    <ContentProvider lang={lang}>
-      <AppContent lang={lang} setLang={setLang} />
-    </ContentProvider>
   );
 }
 

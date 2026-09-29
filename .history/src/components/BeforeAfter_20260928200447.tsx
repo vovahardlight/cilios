@@ -26,7 +26,7 @@ export const BeforeAfter: React.FC<Props> = ({ lang, onSelectCase }) => {
     setSliderPos(percentage);
   }, []);
 
-  // Фиксация захвата указателя
+  // Фиксация захвата указателя (мышь/палец не теряются даже при быстром движении)
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(true);
@@ -78,7 +78,7 @@ export const BeforeAfter: React.FC<Props> = ({ lang, onSelectCase }) => {
           </p>
         </div>
 
-        {/* СТАБИЛИЗИРОВАННЫЙ ИНТЕРАКТИВНЫЙ ВИЗОР (РАДИУС rounded-[20px]) */}
+        {/* СТАБИЛИЗИРОВАННЫЙ ИНТЕРАКТИВНЫЙ ВИЗОР */}
         <div
           ref={containerRef}
           onPointerDown={handlePointerDown}
@@ -87,7 +87,7 @@ export const BeforeAfter: React.FC<Props> = ({ lang, onSelectCase }) => {
           onPointerCancel={handlePointerUp}
           data-cursor="drag"
           data-cursor-text={lang === 'es' ? 'DESLIZAR' : 'DRAG'}
-          className="gsap-ba-container relative w-full aspect-[4/3] md:aspect-[16/9] rounded-[20px] overflow-hidden select-none cursor-ew-resize border border-gold-500/20 shadow-[0_20px_60px_rgba(0,0,0,0.8)] bg-obsidian-950 touch-none"
+          className="gsap-ba-container relative w-full aspect-[4/3] md:aspect-[16/9] rounded-3xl overflow-hidden select-none cursor-ew-resize border border-gold-500/20 shadow-[0_20px_60px_rgba(0,0,0,0.8)] bg-obsidian-950 touch-none"
           style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
         >
           {/* Слой «ПОСЛЕ» (С ресницами) - z-0 */}
@@ -110,7 +110,7 @@ export const BeforeAfter: React.FC<Props> = ({ lang, onSelectCase }) => {
             {t.after}
           </div>
 
-          {/* Слой «ДО» (Натуральный без ресниц) - z-20 */}
+          {/* Слой «ДО» (Натуральный без ресниц) - z-20 (БЕЗ CSS ТРАНЗИШЕНОВ, 100% СИНХРОН) */}
           <div
             className="absolute inset-0 overflow-hidden z-20 will-change-[clip-path]"
             style={{ 
@@ -137,46 +137,35 @@ export const BeforeAfter: React.FC<Props> = ({ lang, onSelectCase }) => {
             </div>
           </div>
 
-          {/* Золотая лазерная линия-разделитель - z-30 */}
+          {/* Золотая лазерная линия-разделитель - z-30 (СИНХРОННА С КЛИПИНГОМ) */}
           <div
-            className="absolute top-0 bottom-0 w-0.5 bg-gradient-to-b from-gold-300 via-gold-500 to-gold-600 shadow-[0_0_7px_rgba(212,175,55,0.55)] pointer-events-none z-30 will-change-[left]"
+className="absolute top-0 bottom-0 w-0.5 bg-gradient-to-b from-gold-300 via-gold-500 to-gold-600 shadow-[0_0_7px_rgba(212,175,55,0.55)] pointer-events-none z-30 will-change-[left]"
             style={{ left: `${sliderPos}%` }}
           >
-            <div 
-              className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-obsidian-950 border border-gold-400 text-gold-400 shadow-[0_0_12px_rgba(212,175,55,0.32)] flex items-center justify-center transition-transform ${isDragging ? 'scale-110' : ''}`}
-            >
+            <div className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-11 h-11 rounded-full bg-obsidian-950 border border-gold-400 text-gold-400 shadow-[0_0_25px_rgba(212,175,55,0.6)] flex items-center justify-center transition-transform ${isDragging ? 'scale-110' : ''}`}>
               <MoveHorizontal className="w-5 h-5" />
             </div>
           </div>
         </div>
 
-        {/* ПАНЕЛЬ ГАРАНТИИ И КНОПКА — СТРОГАЯ СИММЕТРИЯ */}
-        <div className="gsap-ba-bar mt-8 p-5 sm:p-6 md:px-8 md:py-5 rounded-[20px] bg-obsidian-850/70 border border-gold-500/20 shadow-[0_0_12px_rgba(212,175,55,0.12)] backdrop-blur-md flex flex-col md:flex-row md:items-center justify-between gap-5 md:gap-8">
-          
-          {/* Левая часть: Иконка + Сбалансированный текст */}
-          <div className="flex items-center gap-4 min-w-0">
-            <div className="w-11 h-11 rounded-full bg-gold-500/10 border border-gold-500/25 flex items-center justify-center text-gold-400 shrink-0">
-              <ShieldCheck className="w-5 h-5" />
+        {/* Панель гарантии чистоты работы */}
+        <div className="mt-8 p-6 rounded-2xl bg-obsidian-850/80 border border-gold-500/20 backdrop-blur-md flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 shrink-0">
+              <ShieldCheck className="w-6 h-6" />
             </div>
-            <div className="min-w-0">
-              <div className="text-sm md:text-[15px] font-medium text-cream-100 tracking-tight leading-snug">
-                {t.guaranteeTitle}
-              </div>
-              <div className="text-xs text-cream-200/55 mt-0.5 leading-relaxed font-light">
-                {t.guaranteeDesc}
-              </div>
+            <div>
+              <div className="text-sm font-semibold text-cream-100">{t.guaranteeTitle}</div>
+              <div className="text-xs text-cream-200/60 mt-0.5">{t.guaranteeDesc}</div>
             </div>
           </div>
 
-          {/* Правая часть: Аккуратная золотая кнопка с ровной высотой */}
           <button
             onClick={() => onSelectCase('Efecto Mojado Signature')}
-            className="w-full md:w-auto px-6 py-3 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs uppercase tracking-[0.16em] font-bold whitespace-nowrap transition-all duration-300 shadow-[0_0_14px_rgba(212,175,55,0.18)] active:scale-95 shrink-0 cursor-pointer flex items-center justify-center gap-2 group"
+            className="w-full md:w-auto px-8 py-3.5 bg-gradient-to-r from-gold-500 to-gold-600 hover:from-gold-400 hover:to-gold-500 text-obsidian-950 font-semibold rounded-full text-xs uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(212,175,55,0.3)] active:scale-95 shrink-0 cursor-pointer"
           >
-            <span>{t.ctaBtn}</span>
-            <span className="group-hover:translate-x-0.5 transition-transform duration-300 font-normal">→</span>
+            {t.ctaBtn}
           </button>
-
         </div>
 
       </div>

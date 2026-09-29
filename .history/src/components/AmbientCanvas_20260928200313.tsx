@@ -37,12 +37,12 @@ export const AmbientCanvas: React.FC = () => {
     let width = window.innerWidth;
     let height = window.innerHeight;
 
-    // Координаты мыши и статус нахождения в окне
     let mouseX = -1000;
     let mouseY = -1000;
     let prevMouseX = -1000;
     let prevMouseY = -1000;
-    let isMouseActive = false;
+    let mouseSpeedX = 0;
+    let mouseSpeedY = 0;
 
     const setupCanvasSize = () => {
       width = window.innerWidth;
@@ -55,11 +55,10 @@ export const AmbientCanvas: React.FC = () => {
     setupCanvasSize();
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isMouseActive) {
-        prevMouseX = e.clientX;
-        prevMouseY = e.clientY;
-        isMouseActive = true;
-      }
+      mouseSpeedX = e.clientX - (prevMouseX === -1000 ? e.clientX : prevMouseX);
+      mouseSpeedY = e.clientY - (prevMouseY === -1000 ? e.clientY : prevMouseY);
+      prevMouseX = e.clientX;
+      prevMouseY = e.clientY;
       mouseX = e.clientX;
       mouseY = e.clientY;
     };
@@ -67,22 +66,22 @@ export const AmbientCanvas: React.FC = () => {
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length > 0) {
         const touch = e.touches[0];
-        if (!isMouseActive) {
-          prevMouseX = touch.clientX;
-          prevMouseY = touch.clientY;
-          isMouseActive = true;
-        }
+        mouseSpeedX = touch.clientX - (prevMouseX === -1000 ? touch.clientX : prevMouseX);
+        mouseSpeedY = touch.clientY - (prevMouseY === -1000 ? touch.clientY : prevMouseY);
+        prevMouseX = touch.clientX;
+        prevMouseY = touch.clientY;
         mouseX = touch.clientX;
         mouseY = touch.clientY;
       }
     };
 
     const handleMouseLeave = () => {
-      isMouseActive = false;
       mouseX = -1000;
       mouseY = -1000;
       prevMouseX = -1000;
       prevMouseY = -1000;
+      mouseSpeedX = 0;
+      mouseSpeedY = 0;
     };
 
     window.addEventListener('resize', setupCanvasSize);
@@ -90,20 +89,22 @@ export const AmbientCanvas: React.FC = () => {
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
     window.addEventListener('mouseleave', handleMouseLeave);
 
-    // 24 благородных волоска на ПК (идеальная плотность без пустот), 10 на телефонах
+    // 18 изящных волосков на ПК, 8 на смартфонах (свободный воздух)
     const isMobile = window.innerWidth < 768;
-    const particleCount = isMobile ? 10 : 24;
+    const particleCount = isMobile ? 8 : 18;
 
     const lashes: LashParticle[] = Array.from({ length: particleCount }, (_, idx) => {
-      const isForeground = idx < 4;
+      const isForeground = idx < 3;
       const depth = isForeground ? Math.random() * 0.25 + 0.75 : Math.random() * 0.6;
 
       return {
         x: Math.random() * width,
         y: Math.random() * height,
         depth,
+        // Пропорции строго по сетке шрифта: 13–19px
         length: depth * 6 + 13,
         curl: (Math.random() * 2.5 + 2.5) * (Math.random() > 0.5 ? 1 : -1),
+        // Волос: корень 0.8–1.05px, кончик сойдет в 0px
         rootWidth: depth * 0.25 + 0.8,
         angle: Math.random() * Math.PI * 2,
         rotSpeed: (Math.random() - 0.5) * 0.006,
@@ -112,7 +113,7 @@ export const AmbientCanvas: React.FC = () => {
         swayPhase: Math.random() * Math.PI * 2,
         swaySpeed: Math.random() * 0.01 + 0.005,
         glintPhase: Math.random() * Math.PI * 2,
-        glintSpeed: Math.random() * 0.015 + 0.012,
+        glintSpeed: Math.random() * 0.015 + 0.012, // Скорость бега луча
         vx: 0,
         vy: 0,
         vRot: 0,
@@ -125,83 +126,59 @@ export const AmbientCanvas: React.FC = () => {
       ctx.clearRect(0, 0, width, height);
       time += 1;
 
-      // ЧЕСТНЫЙ И СТАБИЛЬНЫЙ РАСЧЕТ СКОРОСТИ МЫШИ (СТРОГО МЕЖДУ КАДРАМИ RAF)
-      let mouseVx = 0;
-      let mouseVy = 0;
-      let mouseSpeed = 0;
+      mouseSpeedX *= 0.85;
+      mouseSpeedY *= 0.85;
 
-      if (isMouseActive && prevMouseX !== -1000) {
-        mouseVx = mouseX - prevMouseX;
-        mouseVy = mouseY - prevMouseY;
-        const rawSpeed = Math.sqrt(mouseVx * mouseVx + mouseVy * mouseVy);
-        // ЛИМИТЕР: скорость мыши физически ограничена, поэтому ресницы никогда не улетят как из пушки
-        mouseSpeed = Math.min(rawSpeed, 22);
-        prevMouseX = mouseX;
-        prevMouseY = mouseY;
-      }
-
-      // Увеличенный комфортный радиус воздушной волны (175px на ПК, 130px на телефоне)
-      const pushRadius = isMobile ? 130 : 175;
+      const pushRadius = 120;
 
       lashes.forEach((p) => {
-        // 1. ОРГАНИЧЕСКИЙ ТОЛЧОК ВОЗДУХА
-        if (isMouseActive) {
-          const dx = p.x - mouseX;
-          const dy = p.y - mouseY;
-          const dist = Math.sqrt(dx * dx + dy * dy);
+        // 1. Аэродинамический толчок от мыши
+        const dx = p.x - mouseX;
+        const dy = p.y - mouseY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < pushRadius && dist > 0) {
-            // Мягкий нелинейный спад силы к краям волны
-            const force = Math.pow(1 - dist / pushRadius, 1.6);
-            const normalX = dx / dist;
-            const normalY = dy / dist;
+        if (dist < pushRadius && dist > 0) {
+          const force = Math.pow(1 - dist / pushRadius, 2);
+          const normalX = dx / dist;
+          const normalY = dy / dist;
 
-            // Стабильное радиальное отталкивание (работает ВСЕГДА, даже при медленном движении)
-            const repulsion = 1.9;
-            p.vx += normalX * force * repulsion;
-            p.vy += normalY * force * repulsion;
+          const repulsion = 1.6;
+          p.vx += normalX * force * repulsion;
+          p.vy += normalY * force * repulsion;
 
-            // Направленный шлейф ветра за движением мыши (плавный, без скачков)
-            if (mouseSpeed > 0.5) {
-              p.vx += (mouseVx / (mouseSpeed || 1)) * (mouseSpeed * 0.06) * force;
-              p.vy += (mouseVy / (mouseSpeed || 1)) * (mouseSpeed * 0.06) * force;
-            }
+          p.vx += mouseSpeedX * force * 0.07;
+          p.vy += mouseSpeedY * force * 0.07;
 
-            // Завихрение вокруг оси
-            const torque = (normalX * mouseVy - normalY * mouseVx) * 0.002;
-            p.vRot += (torque + (Math.random() - 0.5) * 0.012) * force;
-          }
+          // Корень ресницы тяжелее, кончик закручивается
+          const torque = (normalX * mouseSpeedY - normalY * mouseSpeedX) * 0.0025;
+          p.vRot += (torque + (Math.random() - 0.5) * 0.015) * force;
         }
 
-        // Ограничение максимальной скорости волоска (гарантия спокойствия)
-        const currentSpeed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
-        if (currentSpeed > 4.2) {
-          p.vx = (p.vx / currentSpeed) * 4.2;
-          p.vy = (p.vy / currentSpeed) * 4.2;
-        }
+        // Сопротивление воздуха
+        p.vx *= 0.94;
+        p.vy *= 0.94;
+        p.vRot *= 0.93;
 
-        // Сопротивление воздуха (плавное затухание)
-        p.vx *= 0.93;
-        p.vy *= 0.93;
-        p.vRot *= 0.92;
-
-        // Парение волоска
+        // Парение
         p.swayPhase += p.swaySpeed;
         p.y -= p.speedY - p.vy;
         p.x += p.speedX + Math.sin(p.swayPhase) * 0.18 + p.vx;
         p.angle += p.rotSpeed + p.vRot;
 
-        // Бесшовный цикл экрана
+        // Цикличность экрана
         if (p.y < -30) p.y = height + 30;
         if (p.x < -30) p.x = width + 30;
         if (p.x > width + 30) p.x = -30;
 
-        // 2. СКОЛЬЗЯЩИЙ СВЕТОВОЙ БЛИК
+        // --- 2. МАТЕМАТИКА СКОЛЬЗЯЩЕГО БЛИКА ПО ВОЛОСКУ ---
+        // Угол отражения софита: луч активируется, когда волос поворачивается гранью к свету
         const lightCatch = Math.cos(p.angle * 1.5 + p.glintPhase);
         const catchesLight = lightCatch > 0.15;
+
+        // Позиция светового луча вдоль волоска: от 0.0 (корень) до 1.0 (кончик)
         const glintPos = ((time * p.glintSpeed + p.glintPhase) % (Math.PI * 2)) / (Math.PI * 2);
 
-        // 3. ГРАДИЕНТ ВДОЛЬ ВОЛОСКА
+        // --- 3. ГРАДИЕНТ ЦВЕТА И СВЕТА ВДОЛЬ ВОЛОСКА ---
         const halfLen = p.length / 2;
         const tipX = halfLen;
         const tipY = -p.curl * 0.35;
@@ -209,8 +186,11 @@ export const AmbientCanvas: React.FC = () => {
         const ctrlY = -p.curl;
         const rootW = p.rootWidth;
 
+        // Градиент от основания к кончику
         const grad = ctx.createLinearGradient(-halfLen, 0, tipX, tipY);
-        const baseRootAlpha = Math.min(0.42, p.depth * 0.14 + 0.20);
+
+        // Ослабленная прозрачность (спокойная текстура вместо неонового блеска)
+        const baseRootAlpha = Math.min(0.38, p.depth * 0.14 + 0.16);
         const baseTipAlpha = baseRootAlpha * 0.20;
 
         if (catchesLight && glintPos > 0.05 && glintPos < 0.95) {
@@ -221,7 +201,8 @@ export const AmbientCanvas: React.FC = () => {
           if (gStart > 0) {
             grad.addColorStop(gStart, `rgba(195, 170, 130, ${baseRootAlpha * 0.85})`);
           }
-          grad.addColorStop(glintPos, `rgba(255, 250, 232, ${Math.min(0.65, baseRootAlpha + 0.25)})`);
+          // Сдержанный блик шампанского
+          grad.addColorStop(glintPos, `rgba(255, 250, 232, ${Math.min(0.60, baseRootAlpha + 0.22)})`);
           if (gEnd < 1) {
             grad.addColorStop(gEnd, `rgba(195, 170, 130, ${baseTipAlpha * 1.4})`);
           }
@@ -236,7 +217,6 @@ export const AmbientCanvas: React.FC = () => {
         ctx.translate(p.x, p.y);
         ctx.rotate(p.angle);
 
-        // 4. КОНИЧЕСКИЙ КЛИН (АНАТОМИЧЕСКИЙ ВОЛОСОК)
         ctx.beginPath();
         ctx.moveTo(-halfLen, -rootW / 2);
         ctx.quadraticCurveTo(ctrlX, ctrlY - rootW * 0.2, tipX, tipY);
@@ -246,7 +226,7 @@ export const AmbientCanvas: React.FC = () => {
         ctx.fillStyle = grad;
         ctx.fill();
 
-        // 5. МИКРО-СПЕКУЛЯРНЫЙ ОРЕОЛ БЛИКА
+        // Деликатный микро-ореол (уменьшен радиус и яркость)
         if (catchesLight && p.depth > 0.65 && glintPos > 0.2 && glintPos < 0.8) {
           const it = 1 - glintPos;
           const fx = it * it * (-halfLen) + 2 * it * glintPos * ctrlX + glintPos * glintPos * tipX;
@@ -254,7 +234,7 @@ export const AmbientCanvas: React.FC = () => {
 
           ctx.beginPath();
           ctx.arc(fx, fy, rootW * 0.9, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 252, 235, ${0.12 * p.depth})`;
+          ctx.fillStyle = `rgba(255, 252, 235, ${0.10 * p.depth})`;
           ctx.fill();
         }
 

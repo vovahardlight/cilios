@@ -20,46 +20,22 @@ import { FilmGrain } from './components/FilmGrain';
 import { Reviews } from './components/Reviews';
 import { FAQ } from './components/FAQ';
 
-// CMS & SEO МОДУЛИ
-import { ContentProvider, useContent } from './context/ContentContext';
-import { AdminModal } from './components/admin/AdminModal';
-import { AdminLogin } from './components/admin/AdminLogin';
-
 import { Sparkles, MapPin, Clock, ShieldCheck, MessageCircle, ArrowUpRight } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void }) {
-  const { data } = useContent(); // Динамические данные из CMS в реальном времени
+export function App() {
+  const [lang, setLang] = useState<Lang>('es');
   const [isLoading, setIsLoading] = useState(true);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string>('');
 
   const t = content[lang];
   const mainRef = useRef<HTMLDivElement>(null);
-
-  // Список услуг (из CMS или запасной из translations)
-  const currentServices = data?.services?.[lang] || t.pricing.items;
-  // Динамический статус свободных мест из CMS
-  const currentSpots = data?.spotsLeft?.[lang] || t.nav.spotsLeft;
-
-  // ГОРЯЧИЕ КЛАВИШИ ДЛЯ ВХОДА В CMS: Cmd+Shift+A (Mac) или Ctrl+Shift+A (Win)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
-        e.preventDefault();
-        setIsLoginOpen(true);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   useEffect(() => {
     if (isLoading) return;
@@ -69,7 +45,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
     }, 150);
 
     const ctx = gsap.context(() => {
-      // 1. ПЛАВНЫЙ ВХОД ПЕРВОГО ЭКРАНА
+      // 1. ПЛАВНЫЙ ВХОД ПЕРВОГО ЭКРАНА С ФОТОГРАФИЕЙ
       const heroTl = gsap.timeline();
 
       heroTl
@@ -102,9 +78,27 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
           { opacity: 0, y: 20 },
           { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' },
           '-=0.7'
+        )
+        .fromTo(
+          '.gsap-hero-image',
+          { opacity: 0, scale: 1.08, y: 30 },
+          { opacity: 1, scale: 1.03, y: 0, duration: 1.4, ease: 'power3.out' },
+          '-=0.9'
         );
 
-      // ПАРАЛЛАКС ЗАГОЛОВКА HERO ПРИ СКРОЛЛЕ
+      // ПАРАЛЛАКС ФОТО В HERO ПРИ СКРОЛЛЕ
+      gsap.to('.gsap-hero-image', {
+        y: 45,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: '.gsap-hero',
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 2.2,
+        },
+      });
+
+      // ПАРАЛЛАКС ТЕКСТА HERO
       gsap.to('.gsap-hero-title', {
         y: -60,
         opacity: 0.25,
@@ -225,7 +219,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         }
       );
 
-      // КАРТОЧКИ УСЛУГ (EDITORIAL LIST)
+      // ПЕРСОНАЛЬНЫЙ СКРОЛЛ-ТРИГГЕР ДЛЯ СТРОК EDITORIAL LIST
       const serviceCards = gsap.utils.toArray<HTMLElement>('.gsap-service-card');
       serviceCards.forEach((card) => {
         gsap.fromTo(
@@ -367,17 +361,10 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
   return (
     <>
       <GsapCursor />
-
-      {/* Золотая нить прогресса скролла */}
       <ScrollProgress />
-
-      {/* Бархатное пленочное зерно */}
       <FilmGrain />
-
-      {/* Прелоадер */}
       {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
 
-      {/* ГЛАВНЫЙ GSAP SMOOTH SCROLL ДЛЯ ВСЕГО КОНТЕНТА */}
       <GsapSmoothScroll>
         <div
           ref={mainRef}
@@ -425,58 +412,75 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
           </header>
 
-          {/* HERO SECTION — МОНУМЕНТАЛЬНАЯ ОБЛОЖКА ПО ЗОЛОТОМУ СЕЧЕНИЮ */}
-          <section className="gsap-hero relative min-h-[calc(100svh-5rem)] flex flex-col justify-center items-center px-6 py-12 sm:py-16 z-10">
-            <div className="max-w-4xl mx-auto text-center gsap-hero-title flex flex-col items-center">
+          {/* HERO SECTION — НОВАЯ РЕДАКТОРСКАЯ КОМПОЗИЦИЯ С MACRO-IMAGE */}
+          <section className="gsap-hero relative min-h-[calc(100svh-5rem)] flex items-center px-6 py-12 sm:py-16 z-10">
+            <div className="max-w-7xl w-full mx-auto gsap-hero-title grid grid-cols-1 lg:grid-cols-[1fr_0.8fr] gap-10 lg:gap-20 items-center">
               
-              <div className="gsap-hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-obsidian-850 border border-gold-500/20 text-gold-400 text-[11px] font-medium mb-6 shadow-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-ping"></span>
-                {currentSpots}
+              {/* Левая колонка: Текст и CTA */}
+              <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
+                <div className="gsap-hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-obsidian-850 border border-gold-500/20 text-gold-400 text-[11px] font-medium mb-5 sm:mb-6 shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-ping"></span>
+                  {t.nav.spotsLeft}
+                </div>
+
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif text-cream-50 leading-[1.18] tracking-tight">
+                  <div className="overflow-hidden pb-4 -mb-4 px-3 -mx-3">
+                    <div className="gsap-reveal-text inline-block pb-2">
+                      {t.hero.titlePrimary}
+                    </div>
+                  </div>
+                  <div className="overflow-hidden pb-8 -mb-8 px-6 -mx-6 mt-1">
+                    <div className="gsap-reveal-text inline-block italic font-light bg-gradient-to-r from-gold-300 via-gold-400 to-gold-600 bg-clip-text text-transparent pb-8 -mb-8 pr-6 pl-1">
+                      {t.hero.titleSecondary}
+                    </div>
+                  </div>
+                </h1>
+
+                <p className="gsap-hero-desc mt-5 sm:mt-6 max-w-xl text-sm sm:text-base text-cream-200/70 font-light leading-relaxed">
+                  {t.hero.desc}
+                </p>
+
+                <div className="gsap-hero-cta mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 w-full sm:w-auto">
+                  <GsapMagnetic
+                    onClick={() => { setSelectedService(''); setIsBookingOpen(true); }}
+                    className="w-full sm:w-auto px-8 py-3.5 sm:px-9 sm:py-4 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs uppercase tracking-widest font-bold transition shadow-[0_0_16px_rgba(212,175,55,0.18)] active:scale-95"
+                  >
+                    {t.hero.ctaBook}
+                  </GsapMagnetic>
+
+                  <GsapMagnetic
+                    onClick={() => setIsQuizOpen(true)}
+                    className="w-full sm:w-auto px-7 py-3.5 sm:px-8 sm:py-4 rounded-full bg-obsidian-850 hover:bg-obsidian-800 text-cream-100 border border-white/10 text-xs uppercase tracking-widest font-bold transition flex items-center justify-center gap-2 active:scale-95"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-gold-400" />
+                    {t.hero.ctaQuiz}
+                  </GsapMagnetic>
+                </div>
               </div>
 
-              <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[5.2rem] font-serif text-cream-50 leading-[1.12] tracking-tight">
-                <div className="overflow-hidden pb-4 -mb-4 px-3 -mx-3">
-                  <div className="gsap-reveal-text inline-block pb-2">
-                    {t.hero.titlePrimary}
-                  </div>
+              {/* Правая колонка: Архитектурный Visual Anchor (Desktop) */}
+              <div className="hidden lg:block relative w-full max-w-[420px] justify-self-end">
+                <div className="relative aspect-[4/5] overflow-hidden rounded-[20px] border border-gold-500/15 bg-obsidian-900">
+                  <img
+                    src="/grok-image-9f5b9f4b-7ed3-4a95-87d0-53dff3a9a780.jpg"
+                    alt="Detalle de extensiones de pestañas"
+                    className="gsap-hero-image w-full h-full object-cover scale-[1.03] contrast-[1.03] will-change-transform"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-obsidian-950/45 via-transparent to-obsidian-950/10 pointer-events-none" />
                 </div>
-                <div className="overflow-hidden pb-8 -mb-8 px-6 -mx-6 mt-1">
-                  <div className="gsap-reveal-text inline-block italic font-light bg-gradient-to-r from-gold-300 via-gold-400 to-gold-600 bg-clip-text text-transparent pb-8 -mb-8 pr-6 pl-1">
-                    {t.hero.titleSecondary}
-                  </div>
-                </div>
-              </h1>
-
-              <p className="gsap-hero-desc mt-6 sm:mt-8 max-w-2xl mx-auto text-base sm:text-lg text-cream-200/70 font-light leading-relaxed">
-                {t.hero.desc}
-              </p>
-
-              <div className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-                <GsapMagnetic
-                  onClick={() => { setSelectedService(''); setIsBookingOpen(true); }}
-                  className="w-full sm:w-auto px-9 py-4 rounded-full bg-gold-500 hover:bg-gold-400 text-obsidian-950 text-xs uppercase tracking-widest font-bold transition shadow-[0_0_16px_rgba(212,175,55,0.18)] active:scale-95"
-                >
-                  {t.hero.ctaBook}
-                </GsapMagnetic>
-
-                <GsapMagnetic
-                  onClick={() => setIsQuizOpen(true)}
-                  className="w-full sm:w-auto px-8 py-4 rounded-full bg-obsidian-850 hover:bg-obsidian-800 text-cream-100 border border-white/10 text-xs uppercase tracking-widest font-bold transition flex items-center justify-center gap-2 active:scale-95"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-                  {t.hero.ctaQuiz}
-                </GsapMagnetic>
+                <div className="absolute -left-4 top-12 w-8 h-px bg-gold-400/50" />
+                <div className="absolute -right-4 bottom-20 w-8 h-px bg-gold-400/30" />
               </div>
 
             </div>
           </section>
 
-          {/* ПЕРВАЯ ИЗ ДВУХ ЛАЗЕРНЫХ ЛИНИЙ */}
+          {/* ПЕРВАЯ ИЗ ДВУХ ЛАЗЕРНЫХ ЛИНИЙ (ПОСЛЕ HERO) */}
           <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
             <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
           </div>
 
-          {/* ЦИФРЫ ДОВЕРИЯ С ДИНАМИЧЕСКИМИ СЧЕТЧИКАМИ */}
+          {/* ЦИФРЫ ДОВЕРИЯ */}
           <section className="gsap-stats py-16 relative z-10">
             <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               <div className="gsap-stat-item">
@@ -510,7 +514,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
           </section>
 
-          {/* ИЗОГНУТАЯ БЕГУЩАЯ СТРОКА С ДИНАМИЧЕСКИМ РАЗГОНОМ */}
+          {/* ИЗОГНУТАЯ БЕГУЩАЯ СТРОКА */}
           <CurvedMarquee lang={lang} />
 
           {/* МАКРО-СЛАЙДЕР «ДО/ПОСЛЕ» */}
@@ -522,7 +526,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             }}
           />
 
-          {/* УСЛУГИ: ИЗЫСКАННЫЙ EDITORIAL LIST (ДАННЫЕ ИЗ CMS) */}
+          {/* УСЛУГИ: EDITORIAL LIST ВМЕСТО КАРТОЧЕК */}
           <section id="services" className="py-32 max-w-5xl mx-auto px-6 relative z-10">
             <div className="text-center mb-16">
               <div className="overflow-hidden py-2 -my-2">
@@ -532,7 +536,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
 
             <div className="gsap-services-list">
-              {currentServices.map((item: any, idx: number) => (
+              {t.pricing.items.map((item: any, idx: number) => (
                 <div
                   key={idx}
                   className="gsap-service-card group relative py-7 md:py-8 border-b border-white/10 first:border-t transition-colors duration-500 hover:border-gold-500/30"
@@ -597,7 +601,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
           {/* FAQ */}
           <FAQ lang={lang} />
 
-          {/* ВТОРАЯ ИЗ ДВУХ ЛАЗЕРНЫХ ЛИНИЙ */}
+          {/* ВТОРАЯ ИЗ ДВУХ ЛАЗЕРНЫХ ЛИНИЙ (ПЕРЕД СТУДИЕЙ) */}
           <div className="w-full max-w-7xl mx-auto px-6 overflow-hidden">
             <div className="gsap-divider h-[1px] w-full bg-gradient-to-r from-transparent via-gold-500/35 to-transparent will-change-transform" />
           </div>
@@ -659,7 +663,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
             </div>
           </section>
 
-          {/* ФУТЕР С КНОПКОЙ CMS */}
+          {/* ФУТЕР */}
           <footer className="pt-16 pb-36 md:pb-24 bg-obsidian-950 text-center text-xs text-cream-200/50 relative z-10 overflow-visible">
             <div className="max-w-4xl mx-auto px-6">
               <div className="font-serif text-2xl tracking-widest text-cream-100 mb-4 uppercase leading-relaxed">
@@ -680,15 +684,6 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
                 <span className="text-cream-200/40">
                   {lang === 'es' ? 'Hojas de reclamaciones disponibles' : 'Consumer complaint sheets available'}
                 </span>
-                <span>·</span>
-                {/* ДИСКРЕТНАЯ КНОПКА ВХОДА В АДМИНКУ */}
-                <button
-                  onClick={() => setIsLoginOpen(true)}
-                  title="Panel de Control (Cmd+Shift+A)"
-                  className="hover:text-gold-400 text-cream-200/30 transition cursor-pointer text-[11px]"
-                >
-                  ⚙ CMS
-                </button>
               </div>
               <p>{t.footer.copy}</p>
             </div>
@@ -696,7 +691,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
         </div>
       </GsapSmoothScroll>
       
-      {/* МОДАЛКИ КЛИЕНТСКИЕ */}
+      {/* МОДАЛКИ */}
       <LashQuiz lang={lang} isOpen={isQuizOpen} onClose={() => setIsQuizOpen(false)} />
       <BookingModal
         lang={lang}
@@ -714,31 +709,7 @@ function AppContent({ lang, setLang }: { lang: Lang; setLang: (l: Lang) => void 
 
       {/* КНОПКА ВОЗВРАТА НАВЕРХ */}
       <ScrollToTop />
-
-      {/* МОДАЛКИ АДМИНИСТРАТОРА (CMS) */}
-      <AdminLogin
-        isOpen={isLoginOpen}
-        onClose={() => setIsLoginOpen(false)}
-        onSuccess={() => {
-          setIsLoginOpen(false);
-          setIsAdminOpen(true);
-        }}
-      />
-      <AdminModal
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
-      />
     </>
-  );
-}
-
-// Обертка App в ContentProvider
-export function App() {
-  const [lang, setLang] = useState<Lang>('es');
-  return (
-    <ContentProvider lang={lang}>
-      <AppContent lang={lang} setLang={setLang} />
-    </ContentProvider>
   );
 }
 
